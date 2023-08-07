@@ -1,0 +1,52 @@
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+    - main
+    - 'releases/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Node
+      uses: actions/setup-node@v3.6.0
+      with:
+        node-version-file: '.nvmrc'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build & Lint
+      run: npm run all
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Node
+      uses: actions/setup-node@v3.6.0
+      with:
+        node-version-file: '.nvmrc'
+
+    - name: Install dependencies
+      run: npm ci
+
+# Here's where the plugin/theme would run their custom build process
+# and configure the server environment.
+
+    - name: Start server
+      run: npx wp-env start
+
+    - name: Run performance tests
+      uses: ./
+      with:
+        urls: |
+          http://localhost:8889/
+          http://localhost:8889/?p=1

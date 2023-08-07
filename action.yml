@@ -1,0 +1,17 @@
+name: 'wp-performance-tests'
+description: 'Run performance tests for WordPress sites'
+author: 'Pascal Birchler'
+branding:
+  color: 'blue'
+  icon: 'trending-up'
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+    required: false
+    default: ${{ github.token }}
+  urls:
+    required: true
+    description: 'URLs to test'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
