@@ -90,7 +90,7 @@ async function run(): Promise<void> {
 
 	await summary
 		.addHeading('Performance Test Results')
-		.addRaw(`Performance test results for ${headSha} are in :bell:!`);
+		.addRaw(`Performance test results for ${headSha} are in :bell:!`).addEOL();
 
 	// Prepare results for each URL.
 	// TODO: Maybe separate columns for 'Before', 'After', 'Diff %', 'Diff abs.'.

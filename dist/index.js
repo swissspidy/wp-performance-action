@@ -71,7 +71,7 @@ async function run() {
     // TODO: Checkout target branch & commit, install dependencies, build, then run same tests.
     await core_1.summary
         .addHeading('Performance Test Results')
-        .addRaw(`Performance test results for ${headSha} are in :bell:!`);
+        .addRaw(`Performance test results for ${headSha} are in :bell:!`).addEOL();
     // Prepare results for each URL.
     // TODO: Maybe separate columns for 'Before', 'After', 'Diff %', 'Diff abs.'.
     for (const url of urls) {
