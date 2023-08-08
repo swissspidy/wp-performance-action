@@ -8,7 +8,9 @@
     "project": "./tsconfig.json"
   },
   "rules": {
-    "i18n-text/no-en": "off"
+    "camelcase": "off",
+    "i18n-text/no-en": "off",
+    "no-console": "off"
   },
   "env": {
     "node": true,

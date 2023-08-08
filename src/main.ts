@@ -1,44 +1,28 @@
-import { resolve } from 'node:path';
-import { promises as fsPromises, constants as fsConstants } from 'node:fs';
-
-import {
-	getInput,
-	setFailed,
-	startGroup,
-	endGroup,
-	debug,
-} from '@actions/core';
+import { debug, getInput, setFailed, summary } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { exec } from '@actions/exec';
+import { exec, getExecOutput } from '@actions/exec';
+import csv from 'csvtojson';
 
-import { wait } from './wait';
+function log(message: string) {
+	console.log(message);
+}
 
-const { access: accessFile, writeFile, readFile } = fsPromises;
-const { F_OK } = fsConstants;
-
-/**
- * Check if a given file exists and can be accessed.
- * @param {string} filename
- */
-export async function fileExists(filename: string) {
+export function isValidUrl(url: string): boolean {
 	try {
-		await accessFile(filename, F_OK);
+		new URL(url);
 		return true;
-	} catch (e) {}
-	return false;
+	} catch {
+		return false;
+	}
 }
 
 async function run(): Promise<void> {
 	const token = getInput('repo-token');
 	const octokit = getOctokit(token);
-	const { owner, repo, number: prNumber } = context.issue;
+	const { number: prNumber } = context.issue;
 
-	const ms: string = getInput('milliseconds');
-	debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-
-	debug(new Date().toTimeString());
-	await wait(parseInt(ms, 10));
-	debug(new Date().toTimeString());
+	const headSha =
+		context.payload.after || context.payload.pull_request?.head.sha;
 
 	const baseSha = context.payload.before || context.payload.pull_request?.sha;
 	const baseRef = context.payload.ref || context.payload.pull_request?.ref;
@@ -47,44 +31,182 @@ async function run(): Promise<void> {
 		throw new Error(`Missing base SHA or ref for event ${context.eventName}`);
 	}
 
-	const cwd = process.cwd();
+	const urls = getInput('urls')
+		.split('\n')
+		.map(url => url.trim())
+		.filter(url => isValidUrl(url));
 
-	if (!(await fileExists(resolve(cwd, '.wp-env.json')))) {
-		throw new Error(`No .wp-env.json file found`);
+	debug(`URLs to test: ${urls.join(', ')}`);
+
+	log('Cloning the wpp-research repository...');
+	await exec('git clone https://github.com/GoogleChromeLabs/wpp-research.git');
+
+	// TODO: What about nvm install, if the Node version doesn't match?
+	log('Installing dependencies...');
+	await exec(`cd wpp-research && npm ci`);
+
+	const webVitalsPerUrl: Record<
+		string,
+		Record<string, string | number | boolean>[]
+	> = {};
+	const serverTimingPerUrl: Record<
+		string,
+		Record<string, string | number | boolean>[]
+	> = {};
+
+	for (const url of urls) {
+		const { stdout: serverTimingResults } = await getExecOutput(
+			`npm run research --silent -- benchmark-server-timing -u ${url} -n 1 -p -o csv`,
+			[],
+			{
+				cwd: 'wpp-research',
+				silent: false,
+			},
+		);
+		serverTimingPerUrl[url] = await csv({
+			noheader: true,
+			headers: ['key', 'value'],
+		}).fromString(serverTimingResults);
+
+		const { stdout: webVitalsResults } = await getExecOutput(
+			`npm run research --silent -- benchmark-web-vitals -u ${url} -n 2 -p -o csv`,
+			[],
+			{
+				cwd: 'wpp-research',
+				silent: false,
+			},
+		);
+		webVitalsPerUrl[url] = await csv({
+			noheader: true,
+			headers: ['key', 'value'],
+		}).fromString(webVitalsResults);
 	}
 
-	// TODO: Force-install Performance Lab plugin through a custom .wp-env.override.json file.
-	// Q: What if .wp-env.override.json already exists?
-	// const overrideConfig = {
-	// 	plugins: [
-	// 		"https://downloads.wordpress.org/plugin/performance-lab.zip",
-	// 	],
-	// 	"config": {
-	// 		"PERFLAB_DISABLE_OBJECT_CACHE_DROPIN": true
-	// 	}
-	// };
-	//
-	// const wpEnvConfig = JSON.parse(await readFile(resolve(cwd, '.wp-env.json'), { encoding: 'utf-8'}));
-	// overrideConfig.plugins = [...new Set<string>(
-	// 	...wpEnvConfig.plugins,
-	// 	...overrideConfig.plugins
-	// 	)
-	// ]
-	//
-	// await writeFile(
-	// 		resolve(cwd, '.wp-env.override.json'),
-	// 		JSON.stringify(overrideConfig)
-	// );
+	// TODO: Checkout target branch & commit, install dependencies, build, then run same tests.
 
-	// TODO: Manually start wp-env server.
-	// await exec('npx wp-env');
+	await summary
+		.addHeading('Performance Test Results')
+		.addRaw(`Performance test results for ${headSha} are in :bell:!`);
 
-	// TODO: Manually run Playwright.
-	// Possibly blocked by https://github.com/microsoft/playwright/issues/7275
+	// Prepare results for each URL.
+	// TODO: Maybe separate columns for 'Before', 'After', 'Diff %', 'Diff abs.'.
+	for (const url of urls) {
+		const serverTimingTable = serverTimingPerUrl[url]
+			.map(({ key, value }, i) => {
+				// TODO: Compare results with target here.
+				if (0 === i) {
+					return [
+						{ data: key.toString(), header: true },
+						{ data: value.toString(), header: true },
+					];
+				}
 
-	// TODO: Compare results.
+				// Success rate is not a number.
+				if (!Number.isFinite(value)) {
+					return [key.toString(), value.toString()];
+				}
 
-	// TODO: Write comment or set status check.
+				return [key.toString(), `${value} ms`];
+			})
+			.filter(Boolean);
+		await summary.addTable(serverTimingTable);
+
+		const webVitalsTable = webVitalsPerUrl[url]
+			.map(({ key, value }, i) => {
+				// TODO: Compare results with target here.
+				if (0 === i) {
+					return [
+						{ data: key.toString(), header: true },
+						{ data: value.toString(), header: true },
+					];
+				}
+
+				// Success rate is not a number.
+				if (!Number.isFinite(value)) {
+					return [key.toString(), value.toString()];
+				}
+
+				return [key.toString(), `${value} ms`];
+			})
+			.filter(Boolean);
+		await summary.addTable(webVitalsTable);
+	}
+
+	// Re-use text as PR comment.
+	const resultsText = summary.stringify();
+
+	if (
+		context.eventName !== 'pull_request' &&
+		context.eventName !== 'pull_request_target'
+	) {
+		log('No PR associated with this action run, just posting summary.');
+		await summary.write();
+	} else {
+		// TODO: Optionally set status check instead.
+
+		const commentInfo = {
+			...context.repo,
+			issue_number: prNumber,
+		};
+
+		const comment = {
+			...commentInfo,
+			body: resultsText,
+		};
+
+		let commentId;
+		try {
+			const comments = (await octokit.rest.issues.listComments(commentInfo))
+				.data;
+			for (let i = comments.length; i--; ) {
+				const c = comments[i];
+				if (
+					c.user?.type === 'Bot' &&
+					/Performance test results/i.test(c?.body || '')
+				) {
+					commentId = c.id;
+					break;
+				}
+			}
+		} catch (e) {
+			if (e instanceof Error) {
+				log(`Error checking for previous comments: ${e.message}`);
+			} else {
+				log('Error checking for previous comments');
+			}
+		}
+
+		if (commentId) {
+			log(`Updating previous comment #${commentId}`);
+			try {
+				await octokit.rest.issues.updateComment({
+					...context.repo,
+					comment_id: commentId,
+					body: comment.body,
+				});
+			} catch (e) {
+				if (e instanceof Error) {
+					log(`Error updating comment: ${e.message}`);
+				} else {
+					log('Error updating comment');
+				}
+			}
+		}
+
+		if (!commentId) {
+			try {
+				await octokit.rest.issues.createComment(comment);
+			} catch (e) {
+				if (e instanceof Error) {
+					log(`Error creating comment: ${e.message}`);
+				} else {
+					log('Error creating comment');
+				}
+				log(`Adding to summary instead...`);
+				await summary.write();
+			}
+		}
+	}
 }
 
 (async () => {

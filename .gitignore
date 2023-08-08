@@ -97,3 +97,6 @@ Thumbs.db
 # Ignore built ts files
 __tests__/runner/*
 lib/**/*
+
+# Ignore repository cloned during run
+wpp-research/
