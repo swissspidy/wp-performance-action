@@ -60,7 +60,7 @@ async function run(): Promise<void> {
 
 	for (const url of urls) {
 		const { stdout: serverTimingResults } = await getExecOutput(
-			`npm run research --silent -- benchmark-server-timing -u ${url} -n 1 -p -o csv`,
+			`npm run research --silent -- benchmark-server-timing -u ${url} -n 100 -p -o csv`,
 			[],
 			{
 				cwd: 'wpp-research',
@@ -73,7 +73,7 @@ async function run(): Promise<void> {
 		}).fromString(serverTimingResults);
 
 		const { stdout: webVitalsResults } = await getExecOutput(
-			`npm run research --silent -- benchmark-web-vitals -u ${url} -n 2 -p -o csv`,
+			`npm run research --silent -- benchmark-web-vitals -u ${url} -n 20 -p -o csv`,
 			[],
 			{
 				cwd: 'wpp-research',
@@ -90,7 +90,8 @@ async function run(): Promise<void> {
 
 	await summary
 		.addHeading('Performance Test Results')
-		.addRaw(`Performance test results for ${headSha} are in :bell:!`).addEOL();
+		.addRaw(`Performance test results for ${headSha} are in :bell:!`, true)
+		.addEOL();
 
 	// Prepare results for each URL.
 	// TODO: Maybe separate columns for 'Before', 'After', 'Diff %', 'Diff abs.'.

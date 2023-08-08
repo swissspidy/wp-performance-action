@@ -51,7 +51,7 @@ async function run() {
     const webVitalsPerUrl = {};
     const serverTimingPerUrl = {};
     for (const url of urls) {
-        const { stdout: serverTimingResults } = await (0, exec_1.getExecOutput)(`npm run research --silent -- benchmark-server-timing -u ${url} -n 1 -p -o csv`, [], {
+        const { stdout: serverTimingResults } = await (0, exec_1.getExecOutput)(`npm run research --silent -- benchmark-server-timing -u ${url} -n 100 -p -o csv`, [], {
             cwd: 'wpp-research',
             silent: false,
         });
@@ -59,7 +59,7 @@ async function run() {
             noheader: true,
             headers: ['key', 'value'],
         }).fromString(serverTimingResults);
-        const { stdout: webVitalsResults } = await (0, exec_1.getExecOutput)(`npm run research --silent -- benchmark-web-vitals -u ${url} -n 2 -p -o csv`, [], {
+        const { stdout: webVitalsResults } = await (0, exec_1.getExecOutput)(`npm run research --silent -- benchmark-web-vitals -u ${url} -n 20 -p -o csv`, [], {
             cwd: 'wpp-research',
             silent: false,
         });
@@ -71,7 +71,8 @@ async function run() {
     // TODO: Checkout target branch & commit, install dependencies, build, then run same tests.
     await core_1.summary
         .addHeading('Performance Test Results')
-        .addRaw(`Performance test results for ${headSha} are in :bell:!`).addEOL();
+        .addRaw(`Performance test results for ${headSha} are in :bell:!`, true)
+        .addEOL();
     // Prepare results for each URL.
     // TODO: Maybe separate columns for 'Before', 'After', 'Diff %', 'Diff abs.'.
     for (const url of urls) {
