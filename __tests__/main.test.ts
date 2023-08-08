@@ -1,15 +1,15 @@
-import * as process from 'node:process';
-import * as cp from 'node:child_process';
-import * as path from 'node:path';
+import { env, execPath } from 'node:process';
+import { execFileSync, type ExecFileSyncOptions } from 'node:child_process';
+import { join } from 'node:path';
 import { expect, test } from '@jest/globals';
 
-// shows how the runner will run a javascript action with env / stdout protocol
-test('test runs', () => {
-	process.env['INPUT_MILLISECONDS'] = '500';
-	const np = process.execPath;
-	const ip = path.join(__dirname, '..', 'lib', 'main.js');
-	const options: cp.ExecFileSyncOptions = {
-		env: process.env,
+const file = join(__dirname, '..', 'lib', 'main.js');
+
+test('Fails by default', () => {
+	const options: ExecFileSyncOptions = {
+		env: env,
 	};
-	console.log(cp.execFileSync(np, [ip], options).toString());
+	expect(() => execFileSync(execPath, [file], options)).toThrow(
+		'Command failed',
+	);
 });
