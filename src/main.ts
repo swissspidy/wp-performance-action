@@ -39,11 +39,15 @@ async function run(): Promise<void> {
 	debug(`URLs to test: ${urls.join(', ')}`);
 
 	log('Cloning the wpp-research repository...');
-	await exec('git clone https://github.com/GoogleChromeLabs/wpp-research.git');
+	await exec(
+		'git clone https://github.com/GoogleChromeLabs/wpp-research.git',
+		[],
+		{ silent: true },
+	);
 
 	// TODO: What about nvm install, if the Node version doesn't match?
 	log('Installing dependencies...');
-	await exec(`cd wpp-research && npm ci`);
+	await exec(`npm ci`, [], { cwd: 'wpp-research' });
 
 	const webVitalsPerUrl: Record<
 		string,

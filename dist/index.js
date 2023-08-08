@@ -44,10 +44,10 @@ async function run() {
         .filter(url => isValidUrl(url));
     (0, core_1.debug)(`URLs to test: ${urls.join(', ')}`);
     log('Cloning the wpp-research repository...');
-    await (0, exec_1.exec)('git clone https://github.com/GoogleChromeLabs/wpp-research.git');
+    await (0, exec_1.exec)('git clone https://github.com/GoogleChromeLabs/wpp-research.git', [], { silent: true });
     // TODO: What about nvm install, if the Node version doesn't match?
     log('Installing dependencies...');
-    await (0, exec_1.exec)(`cd wpp-research && npm ci`);
+    await (0, exec_1.exec)(`npm ci`, [], { cwd: 'wpp-research' });
     const webVitalsPerUrl = {};
     const serverTimingPerUrl = {};
     for (const url of urls) {
