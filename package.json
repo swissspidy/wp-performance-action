@@ -32,7 +32,7 @@
     "csvtojson": "^2.0.10"
   },
   "devDependencies": {
-    "@types/node": "^16.18.39",
+    "@types/node": "^20.5.0",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
     "@vercel/ncc": "^0.36.1",
