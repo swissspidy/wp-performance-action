@@ -33,8 +33,8 @@ async function run() {
     const octokit = (0, github_1.getOctokit)(token);
     const { number: prNumber } = github_1.context.issue;
     const headSha = github_1.context.payload.after || github_1.context.payload.pull_request?.head.sha;
-    const baseSha = github_1.context.payload.before || github_1.context.payload.pull_request?.sha;
-    const baseRef = github_1.context.payload.ref || github_1.context.payload.pull_request?.ref;
+    const baseSha = github_1.context.payload.before || github_1.context.payload.pull_request?.base.sha;
+    const baseRef = github_1.context.payload.ref || github_1.context.payload.pull_request?.base.ref;
     if (!baseSha || !baseRef) {
         throw new Error(`Missing base SHA or ref for event ${github_1.context.eventName}`);
     }

@@ -24,8 +24,9 @@ async function run(): Promise<void> {
 	const headSha =
 		context.payload.after || context.payload.pull_request?.head.sha;
 
-	const baseSha = context.payload.before || context.payload.pull_request?.sha;
-	const baseRef = context.payload.ref || context.payload.pull_request?.ref;
+	const baseSha =
+		context.payload.before || context.payload.pull_request?.base.sha;
+	const baseRef = context.payload.ref || context.payload.pull_request?.base.ref;
 
 	if (!baseSha || !baseRef) {
 		throw new Error(`Missing base SHA or ref for event ${context.eventName}`);
