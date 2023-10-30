@@ -11,7 +11,7 @@ on:
     - main
     paths-ignore:
     - '**.md'
-  pull_request:
+  pull_request_target:
     paths-ignore:
     - '**.md'
   workflow_dispatch:
@@ -38,6 +38,7 @@ jobs:
         npm run package
 
     - name: Compare the expected and actual dist/ directories
+      if: github.event.pull_request.user.login != 'dependabot[bot]'
       run: |
         if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
           echo "Detected uncommitted changes after build.  See status below:"
@@ -47,7 +48,19 @@ jobs:
       id: diff
 
     - uses: actions/upload-artifact@v3
-      if: ${{ failure() && steps.diff.conclusion == 'failure' }}
+      if: >
+        failure() &&
+        steps.diff.conclusion == 'failure' &&
+        github.event.pull_request.user.login != 'dependabot[bot]'
       with:
         name: dist
         path: dist/
+
+    - name: Commit changes to build files
+      if: github.event.pull_request.user.login == 'dependabot[bot]'
+      run: |
+        if git diff --exit-code > /dev/null; then
+          git add dist
+          git commit -m "Update build files [dependabot skip]"
+          git push -u origin HEAD
+        fi
