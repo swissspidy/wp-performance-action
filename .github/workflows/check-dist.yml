@@ -22,7 +22,7 @@ jobs:
   check-dist:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      contents: write
 
     steps:
     - name: Checkout
