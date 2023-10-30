@@ -24,7 +24,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event.pull_request.merge_commit_sha }}
 
     - name: Set up Node
       uses: actions/setup-node@v4.0.0
@@ -43,7 +43,7 @@ jobs:
       if: github.event.pull_request.user.login != 'dependabot[bot]'
       run: |
         if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
-          echo "Detected uncommitted changes after build.  See status below:"
+          echo "Detected uncommitted changes after build. See status below:"
           git diff
           exit 1
         fi
@@ -61,7 +61,9 @@ jobs:
     - name: Commit changes to build files
       if: github.event.pull_request.user.login == 'dependabot[bot]'
       run: |
-        if git diff --exit-code > /dev/null; then
+        if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
+          echo "Detected uncommitted changes after build."
+
           git config --global user.email "swissspidy@users.noreply.github.com"
           git config --global user.name "Pascal Birchler"
           git add dist
