@@ -16,9 +16,13 @@ on:
     - '**.md'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   check-dist:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
 
     steps:
     - name: Checkout
@@ -62,11 +66,12 @@ jobs:
       if: github.event.pull_request.user.login == 'dependabot[bot]'
       run: |
         if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
-          echo "Detected uncommitted changes after build."
+          echo "Detected uncommitted changes after build. See status below:"
+          git diff
 
           git config --global user.email "swissspidy@users.noreply.github.com"
           git config --global user.name "Pascal Birchler"
-          git add dist
+          git add dist/*
           git commit -m "Update build files [dependabot skip]"
           git push -u origin HEAD
         fi
