@@ -60,6 +60,8 @@ jobs:
       if: github.event.pull_request.user.login == 'dependabot[bot]'
       run: |
         if git diff --exit-code > /dev/null; then
+          git config --global user.email "swissspidy@users.noreply.github.com"
+          git config --global user.name "Pascal Birchler"
           git add dist
           git commit -m "Update build files [dependabot skip]"
           git push -u origin HEAD
