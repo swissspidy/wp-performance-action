@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import type {
 	FullConfig,
 	FullResult,
@@ -97,7 +97,9 @@ class PerformanceReporter implements Reporter {
 			} );
 		}
 
-		mkdirSync( process.env.WP_ARTIFACTS_PATH as string );
+		if ( ! existsSync( process.env.WP_ARTIFACTS_PATH as string ) ) {
+			mkdirSync( process.env.WP_ARTIFACTS_PATH as string );
+		}
 
 		writeFileSync(
 			join(
