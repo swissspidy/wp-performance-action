@@ -58,162 +58,179 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version-file: 'env/.nvmrc'
-        cache-dependency-path: 'env/package-lock.json'
-        cache: npm
 
-    - name: Install dependencies
-      run: npm ci
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Start WordPress
-      run: npm run wp-env start
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Update permalink structure
-      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Import mock data
+    # See https://github.com/actions/upload-artifact/issues/176 and https://github.com/actions/runner/issues/2185
+    - name: Resolve action_path
       run: |
-        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
-        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
-        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
-      if: ${{ inputs.action == 'test' }}
+        echo github.action_path: ${{ github.action_path }}
+        echo GITHUB_ACTION_PATH: $GITHUB_ACTION_PATH
+        echo "PERF_ACTION_PATH=$(realpath ${{ github.action_path }})" >> $GITHUB_ENV
       shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Install user-provided themes and plugins
-      run: |
-        REQUIRED_PLUGINS=$(cat <<-END
-        https://downloads.wordpress.org/plugin/performance-lab.zip
-        END
-        )
-        REQUIRED_THEMES=$(cat <<-END
-        https://downloads.wordpress.org/theme/twentytwentyone.zip
-        https://downloads.wordpress.org/theme/twentytwentythree.zip
-        END
-        )
-
-        jq -n \
-        --arg rp "$REQUIRED_PLUGINS" \
-        --arg p "$PLUGINS" \
-        --arg t "$THEMES" \
-        --arg rt "$REQUIRED_THEMES" \
-        '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
-        > .wp-env.override.json
-      if: ${{ inputs.action == 'test' }}
-      env:
-        PLUGINS: ${{ inputs.plugins }}
-        THEMES: ${{ inputs.themes }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Prepare test site
-      run: |
-        npm run wp-env run tests-cli wp theme activate $THEME --quiet
-        npm run wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
-        npm run wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
-      if: ${{ inputs.action == 'test' }}
-      env:
-        THEME: ${{ inputs.active-theme }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: List defined constants
-      run: npm run wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
-      if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Run tests
-      run: npm run test:performance $ADDITIONAL_ARGS
-      if: ${{ inputs.action == 'test' }}
-      env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
-        SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}
-        ADDITIONAL_ARGS: ${{ inputs.shard != '1/1' && format('-- --shard={0}', inputs.shard) || '' }}
-        URLS_TO_TEST: ${{ inputs.urls }}
-        DEBUG: ${{ inputs.debug == 'true' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Download blob reports from GitHub Actions Artifacts
-      uses: actions/download-artifact@v3
-      if: ${{ inputs.action == 'merge' }}
-      id: download
-      with:
-        name: performance-blob-report
-        path: performance-blob-report
-
-    - name: Merge into single performance report
-      run: npm run test:performance:merge-reports ${{steps.download.outputs.download-path}}
-      if: ${{ inputs.action == 'merge' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Print results
-      run: |
-        if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
-          npm run test:performance:results $WP_ARTIFACTS_PATH/performance-results.json $PREVIOUS_RESULTS
-        else
-          npm run test:performance:results
-        fi;
-      if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
-      env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
-        PREVIOUS_RESULTS: ${{ inputs.previous-results }}
-        REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Add workflow summary
-      run: cat $WP_ARTIFACTS_PATH/performance-results.md >> $GITHUB_STEP_SUMMARY
-      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
-      env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Share raw results
-      id: share-results
-      run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
-      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
-      env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
-      shell: 'bash'
-
-    - name: Share blob report
-      id: share-blob-report
-      run: echo "blob-report=${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
-      if: ${{ inputs.shard != '' }}
-      shell: 'bash'
-
-    - name: Upload performance results
-      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
-      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
-      with:
-        name: performance-results
-        path: ${{ github.action_path }}/artifacts/performance-results.json
-
-    - name: Upload blob report
-      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
-      if: ${{ success() && inputs.shard != '' }}
-      with:
-        name: performance-blob-report
-        path: ${{ github.action_path }}/blob-report
-        retention-days: 1
+#
+#    - name: Setup Node
+#      uses: actions/setup-node@v4
+#      with:
+#        node-version-file: 'env/.nvmrc'
+#        cache-dependency-path: 'env/package-lock.json'
+#        cache: npm
+#
+#    - name: Install dependencies
+#      run: npm ci
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Install Playwright Browsers
+#      run: npx playwright install --with-deps
+#      if: ${{ inputs.action == 'test' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Start WordPress
+#      run: npm run wp-env start
+#      if: ${{ inputs.action == 'test' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Update permalink structure
+#      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
+#      if: ${{ inputs.action == 'test' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Import mock data
+#      run: |
+#        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
+#        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
+#        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
+#      if: ${{ inputs.action == 'test' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Install user-provided themes and plugins
+#      run: |
+#        REQUIRED_PLUGINS=$(cat <<-END
+#        https://downloads.wordpress.org/plugin/performance-lab.zip
+#        END
+#        )
+#        REQUIRED_THEMES=$(cat <<-END
+#        https://downloads.wordpress.org/theme/twentytwentyone.zip
+#        https://downloads.wordpress.org/theme/twentytwentythree.zip
+#        END
+#        )
+#
+#        jq -n \
+#        --arg rp "$REQUIRED_PLUGINS" \
+#        --arg p "$PLUGINS" \
+#        --arg t "$THEMES" \
+#        --arg rt "$REQUIRED_THEMES" \
+#        '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
+#        > .wp-env.override.json
+#      if: ${{ inputs.action == 'test' }}
+#      env:
+#        PLUGINS: ${{ inputs.plugins }}
+#        THEMES: ${{ inputs.themes }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Prepare test site
+#      run: |
+#        npm run wp-env run tests-cli wp theme activate $THEME --quiet
+#        npm run wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
+#        npm run wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
+#      if: ${{ inputs.action == 'test' }}
+#      env:
+#        THEME: ${{ inputs.active-theme }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: List defined constants
+#      run: npm run wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
+#      if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Run tests
+#      run: npm run test:performance $ADDITIONAL_ARGS
+#      if: ${{ inputs.action == 'test' }}
+#      env:
+#        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+#        SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}
+#        ADDITIONAL_ARGS: ${{ inputs.shard != '1/1' && format('-- --shard={0}', inputs.shard) || '' }}
+#        URLS_TO_TEST: ${{ inputs.urls }}
+#        DEBUG: ${{ inputs.debug == 'true' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Download blob reports from GitHub Actions Artifacts
+#      uses: actions/download-artifact@v3
+#      if: ${{ inputs.action == 'merge' }}
+#      id: download
+#      with:
+#        name: performance-blob-report
+#        path: performance-blob-report
+#
+#    - name: Merge into single performance report
+#      run: npm run test:performance:merge-reports ${{steps.download.outputs.download-path}}
+#      if: ${{ inputs.action == 'merge' }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Print results
+#      run: |
+#        if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
+#          npm run test:performance:results $WP_ARTIFACTS_PATH/performance-results.json $PREVIOUS_RESULTS
+#        else
+#          npm run test:performance:results
+#        fi;
+#      if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
+#      env:
+#        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+#        PREVIOUS_RESULTS: ${{ inputs.previous-results }}
+#        REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Add workflow summary
+#      run: cat $WP_ARTIFACTS_PATH/performance-results.md >> $GITHUB_STEP_SUMMARY
+#      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+#      env:
+#        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+#      shell: 'bash'
+#      working-directory: ${{ github.action_path }}/env
+#
+#    - name: Share raw results
+#      id: share-results
+#      run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
+#      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+#      env:
+#        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+#      shell: 'bash'
+#
+#    - name: Share blob report
+#      id: share-blob-report
+#      run: echo "blob-report=${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
+#      if: ${{ inputs.shard != '' }}
+#      shell: 'bash'
+#
+#    # See https://github.com/actions/upload-artifact/issues/176 and https://github.com/actions/runner/issues/2185
+#    - name: Resolve action_path
+#      run: |
+#        echo github.action_path: ${{ github.action_path }}
+#        echo GITHUB_ACTION_PATH: $GITHUB_ACTION_PATH
+#        echo "PERF_ACTION_PATH=$(realpath ${{ github.action_path }})" >> $GITHUB_ENV
+#      shell: 'bash'
+#
+#    - name: Upload performance results
+#      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+#      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+#      with:
+#        name: performance-results
+#        path: ${{ env.PERF_ACTION_PATH }}/artifacts/performance-results.json
+#
+#    - name: Upload blob report
+#      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+#      if: ${{ success() && inputs.shard != '' }}
+#      with:
+#        name: performance-blob-report
+#        path: ${{ env.PERF_ACTION_PATH }}/blob-report
+#        retention-days: 1
