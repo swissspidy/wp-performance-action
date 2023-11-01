@@ -78,6 +78,42 @@ runs:
 
     - name: Add user-provided themes and plugins to wp-env
       run: |
+        PLUGINS=${PLUGINS%$'\n'}
+        THEMES=${THEMES%$'\n'}
+
+        IFS=$'\n';
+
+        PLUGINS=($PLUGINS)
+        THEMES=($THEMES)
+
+        PLUGINS_ARRAY=()
+        for i in "${PLUGINS[@]}"; do
+          if [ ! -z i ]; then
+            if [[ "$i" == *"http"* ]]; then
+              PLUGINS_ARRAY+=($i)
+            else
+              PLUGINS_ARRAY+=$(realpath $i)
+            fi
+          fi
+        done
+
+        PLUGINS=$(printf "%s\n" "${PLUGINS_ARRAY[@]}")
+
+        THEMES_ARRAY=()
+        for i in "${THEMES[@]}"; do
+          if [ ! -z i ]; then
+            if [[ "$i" == *"http"* ]]; then
+              THEMES_ARRAY+=($i)
+            else
+              THEMES_ARRAY+=$(realpath $i)
+            fi
+          fi
+        done
+
+        THEMES=$(printf "%s\n" "${THEMES_ARRAY[@]}")
+
+        unset IFS;
+
         REQUIRED_PLUGINS=$(cat <<-END
         https://downloads.wordpress.org/plugin/wordpress-importer.zip
         https://downloads.wordpress.org/plugin/performance-lab.zip
@@ -96,6 +132,8 @@ runs:
         --arg rt "$REQUIRED_THEMES" \
         '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
         > .wp-env.override.json
+
+        cat .wp-env.override.json
       if: ${{ inputs.action == 'test' }}
       env:
         PLUGINS: ${{ inputs.plugins }}
