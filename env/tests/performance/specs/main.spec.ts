@@ -27,10 +27,8 @@ test.describe( 'Tests', () => {
 
 	const urlsToTest = ( process.env.URLS_TO_TEST || '' )
 		.split( '\n' )
-		.map( ( url ) => url.trim() );
-
-	console.log( 'URLS_TO_TEST', process.env.URLS_TO_TEST );
-	console.log( 'urlsToTest', urlsToTest );
+		.map( ( url ) => url.trim() )
+		.filter( Boolean );
 
 	const iterations = Number( process.env.TEST_ITERATIONS );
 
