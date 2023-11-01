@@ -41,7 +41,7 @@ inputs:
     description: 'Number of iterations (loops) within a single run.'
     default: '20'
   action:
-    description: 'Action to perform, can be either "test" or "merge-reports".'
+    description: 'Action to perform, can be either "test" or "merge".'
     required: false
     default: 'test'
   previous-results:

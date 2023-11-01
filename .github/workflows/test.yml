@@ -96,4 +96,4 @@ jobs:
     - name: Merge performance test results
       uses: ./
       with:
-        action: 'merge-reports'
+        action: 'merge'
