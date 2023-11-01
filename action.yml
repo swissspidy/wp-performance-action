@@ -38,15 +38,14 @@ runs:
     - name: Debugging
       run: |
         pwd
-        ls env/
-        ls ${{ github.action_path }}/
-        ls ${{ github.action_path }}/env/
+        ls -lah .
+        ls -lah ${{ github.action_path }}/env/
       shell: 'bash'
 
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version-file: '.nvmrc'
+        node-version-file: ${{ github.action_path }}/env/.nvmrc
         cache: npm
 
     - name: Install dependencies
