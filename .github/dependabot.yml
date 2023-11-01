@@ -6,6 +6,6 @@ updates:
     interval: weekly
 
 - package-ecosystem: npm
-  directory: /
+  directory: /env
   schedule:
     interval: weekly

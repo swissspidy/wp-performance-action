@@ -49,6 +49,3 @@ jobs:
           http://localhost:8889/
           http://localhost:8889/?p=1
 ```
-
-It's recommended to use the [Performance Lab](https://wordpress.org/plugins/performance-lab) plugin on your site to get additional `Server-Timing` metrics.
-

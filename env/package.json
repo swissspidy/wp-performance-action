@@ -29,7 +29,7 @@
 		"lint": "wp-scripts lint-js",
 		"format": "wp-scripts format",
 		"test:performance": "wp-scripts test-playwright --config tests/performance/playwright.config.ts",
-		"test:performance:merge-reports": "playwright merge-reports --reporter tests/performance/config/performance-reporter.ts ./blob-report",
+		"test:performance:merge-reports": "playwright merge-reports --reporter tests/performance/config/performance-reporter.ts",
 		"test:performance:results": "node tests/performance/cli/results.js",
 		"wp-env": "wp-env"
 	}

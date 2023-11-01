@@ -14,44 +14,47 @@ inputs:
     default: ${{ runner.debug == '1' }}
   urls:
     required: true
-    description: 'URLs to test'
+    description: 'URLs to test, separated by newline.'
     default: ''
   plugins:
     required: false
-    description: 'Plugin(s) to install, separated by newline. Directory path or a ZIP URL'
+    description: 'Plugin(s) to install, separated by newline. Supports directory paths and ZIP URLs'
     default: ''
   themes:
     required: false
-    description: 'Theme(s) to install, separated by newline. Directory path or a ZIP URL'
+    description: 'Theme(s) to install, separated by newline. Supports directory paths and ZIP URLs'
     default: ''
   active-theme:
     required: false
-    description: 'Theme to activate for the test'
+    description: 'Theme to activate for the test.'
     default: 'twentytwentyone',
   shard:
     required: false
-    description: 'Shard to use if running tests in parallel in a matrix'
+    description: 'Shard to use if running tests in parallel in a matrix.'
     default: '1/1'
   repetitions:
     required: false
-    description: 'Number of times the tests should be repeated'
+    description: 'Number of times the tests should be repeated.'
     default: '2'
   iterations:
     required: false
-    description: 'Number of iterations (loops) within a single run'
+    description: 'Number of iterations (loops) within a single run.'
     default: '20'
   action:
-    description: 'Action to perform, can be either "test" or "merge-reports"'
+    description: 'Action to perform, can be either "test" or "merge-reports".'
     required: false
     default: 'test'
   previous-results:
-    description: 'Path to a file with previous performance results for comparison'
+    description: 'Path to a file with previous performance results for comparison.'
     required: false
     default: ''
 outputs:
   results:
     description: "Path to a file with raw results"
     value: ${{ steps.share-results.outputs.results }}
+  blob-report:
+    description: "Path to the blob report folder"
+    value: ${{ steps.share-blob-report.outputs.blob-report }}
 runs:
   using: "composite"
   steps:
@@ -148,11 +151,17 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
-    - name: Merge into single performance report
-      run: npm run test:performance:merge-reports
+    - name: Download blob reports from GitHub Actions Artifacts
+      uses: actions/download-artifact@v3
       if: ${{ inputs.action == 'merge' }}
-      env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+      id: download
+      with:
+        name: performance-blob-report
+        path: performance-blob-report
+
+    - name: Merge into single performance report
+      run: npm run test:performance:merge-reports ${{steps.download.outputs.download-path}}
+      if: ${{ inputs.action == 'merge' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
@@ -173,7 +182,7 @@ runs:
 
     - name: Add workflow summary
       run: cat $WP_ARTIFACTS_PATH/performance-results.md >> $GITHUB_STEP_SUMMARY
-      if: ${{ inputs.action == 'test' }}
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
       shell: 'bash'
@@ -182,14 +191,28 @@ runs:
     - name: Share raw results
       id: share-results
       run: echo "results="$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
-      if: ${{ inputs.action == 'test' }}
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
       shell: 'bash'
 
+    - name: Share blob report
+      id: share-blob-report
+      run: echo "results="${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
+      if: ${{ inputs.shard != '' }}
+      shell: 'bash'
+
     - name: Upload performance results
-      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) }}
       uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       with:
         name: performance-results
         path: ${{ github.action_path }}/artifacts/performance-results.json
+
+    - name: Upload blob report
+      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      if: ${{ success() && inputs.shard != '' }}
+      with:
+        name: performance-blob-report
+        path: ${{ github.action_path }}/blob-report
+        retention-days: 1
