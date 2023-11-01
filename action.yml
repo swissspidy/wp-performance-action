@@ -37,9 +37,8 @@ runs:
   steps:
     - name: Setup Node
       uses: actions/setup-node@v4
-      working-directory: ${{ github.action_path }}/env
       with:
-        node-version-file: '.nvmrc'
+        node-version-file: '${{ github.action_path }}/env/.nvmrc'
         cache: npm
 
     - name: Install dependencies
