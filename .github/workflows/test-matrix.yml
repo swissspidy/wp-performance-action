@@ -23,7 +23,7 @@ jobs:
       with:
         urls: |
           /
-          /sample/page/
+          /sample-page/
         plugins: |
           ./dummy-plugin
         shard: ${{ matrix.shard }}

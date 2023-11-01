@@ -46,8 +46,8 @@ jobs:
         plugins: |
           ./my-awesome-plugin
         urls: |
-          http://localhost:8889/
-          http://localhost:8889/?p=1
+          /
+          /sample-page/
 ```
 
 ### Advanced Example
@@ -63,7 +63,7 @@ jobs:
       with:
         urls: |
           /
-          /sample/page/
+          /sample-page/
         plugins: |
           ./my-awesome-plugin
           https://downloads.wordpress.org/plugin/performant-translations.zip

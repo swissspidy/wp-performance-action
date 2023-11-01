@@ -18,7 +18,7 @@ jobs:
       with:
         urls: |
           /
-          /sample/page/
+          /sample-page/
         plugins: |
           ./dummy-plugin
           https://downloads.wordpress.org/plugin/performant-translations.zip

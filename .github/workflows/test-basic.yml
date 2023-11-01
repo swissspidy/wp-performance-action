@@ -18,4 +18,4 @@ jobs:
       with:
         urls: |
           /
-          /sample/page/
+          /sample-page/
