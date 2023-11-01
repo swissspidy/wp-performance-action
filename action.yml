@@ -27,7 +27,7 @@ inputs:
   active-theme:
     required: false
     description: 'Theme to activate for the test.'
-    default: 'twentytwentyone',
+    default: 'twentytwentyone'
   shard:
     required: false
     description: 'Shard to use if running tests in parallel in a matrix.'
