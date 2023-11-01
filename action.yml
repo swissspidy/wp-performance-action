@@ -76,30 +76,10 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
-    - name: Start WordPress
-      run: npm run wp-env start
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Update permalink structure
-      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Import mock data
-      run: |
-        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
-        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
-        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Install user-provided themes and plugins
+    - name: Add user-provided themes and plugins to wp-env
       run: |
         REQUIRED_PLUGINS=$(cat <<-END
+        https://downloads.wordpress.org/plugin/wordpress-importer.zip
         https://downloads.wordpress.org/plugin/performance-lab.zip
         END
         )
@@ -120,6 +100,27 @@ runs:
       env:
         PLUGINS: ${{ inputs.plugins }}
         THEMES: ${{ inputs.themes }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Start WordPress
+      run: npm run wp-env start
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Update permalink structure
+      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Import mock data
+      run: |
+        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
+        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
+        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
+      if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
