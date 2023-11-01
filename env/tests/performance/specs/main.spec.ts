@@ -28,16 +28,20 @@ test.describe( 'Tests', () => {
 
 	const urlsToTest = ( process.env.URLS_TO_TEST || '' )
 		.split( '\n' )
-		.map( ( url ) => url.trim().replace( /\/$/, '' ) );
+		.map( ( url ) => url.trim() );
+
+	console.log( 'URLS_TO_TEST', process.env.URLS_TO_TEST );
+	console.log( 'urlsToTest', urlsToTest );
 
 	const iterations = Number( process.env.TEST_ITERATIONS );
 
 	for ( const url of urlsToTest ) {
 		for ( let i = 1; i <= iterations; i++ ) {
-			test( `URL: "${
-				url || '/'
-			}" (${ i } of ${ iterations })`, async ( { page, metrics } ) => {
-				await page.goto( `${ url }/?i=${ i }` );
+			test( `URL: "${ url }" (${ i } of ${ iterations })`, async ( {
+				page,
+				metrics,
+			} ) => {
+				await page.goto( `${ url.replace( /\/$/, '' ) }/?i=${ i }` );
 
 				const serverTiming = await metrics.getServerTiming();
 
