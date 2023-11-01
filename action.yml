@@ -191,7 +191,7 @@ runs:
 
     - name: Share raw results
       id: share-results
-      run: echo "results="$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
+      run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
       if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
@@ -199,7 +199,7 @@ runs:
 
     - name: Share blob report
       id: share-blob-report
-      run: echo "results="${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
+      run: echo "blob-report=${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
       if: ${{ inputs.shard != '' }}
       shell: 'bash'
 
