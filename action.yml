@@ -36,6 +36,10 @@ inputs:
     description: 'Path to a file with previous performance results for comparison'
     required: false
     default: ''
+outputs:
+  results:
+    description: "Path to a file with raw results"
+    value: ${{ steps.share-results.outputs.results }}
 runs:
   using: "composite"
   steps:
@@ -98,7 +102,7 @@ runs:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
         SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}
         ADDITIONAL_ARGS: ${{ inputs.shard != '1/1' && format('-- --shard={0}', inputs.shard) || '' }}
-        URLS_TO_TEST: ${{ inputs.url }}
+        URLS_TO_TEST: ${{ inputs.urls }}
         DEBUG: ${{ inputs.debug == 'true' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
@@ -122,6 +126,7 @@ runs:
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
         PREVIOUS_RESULTS: ${{ inputs.previous-results }}
+        REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
@@ -133,9 +138,17 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
+    - name: Share raw results
+      id: share-results
+      run: echo "results="$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
+      if: ${{ inputs.action == 'test' }}
+      env:
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+      shell: 'bash'
+
     - name: Upload performance results
       if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) }}
       uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
       with:
         name: performance-results
-        path: $WP_ARTIFACTS_PATH/performance-results.json
+        path: ${{ github.action_path }}/artifacts/performance-results.json

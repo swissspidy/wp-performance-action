@@ -4,6 +4,10 @@ import { camelCaseDashes } from '../utils';
 const results: Record< string, number[] > = {};
 
 test.describe( 'Tests', () => {
+	test.use( {
+		storageState: {}, // User will be logged out.
+	} );
+
 	// Run *once* before *all* iterations.
 	// Ideal for setting up the site for this particular test.
 	test.beforeAll( async ( { requestUtils } ) => {
@@ -30,10 +34,9 @@ test.describe( 'Tests', () => {
 
 	for ( const url of urlsToTest ) {
 		for ( let i = 1; i <= iterations; i++ ) {
-			test( `URL: "${ url }" (${ i } of ${ iterations })`, async ( {
-				page,
-				metrics,
-			} ) => {
+			test( `URL: "${
+				url || '/'
+			}" (${ i } of ${ iterations })`, async ( { page, metrics } ) => {
 				await page.goto( `${ url }/?i=${ i }` );
 
 				const serverTiming = await metrics.getServerTiming();

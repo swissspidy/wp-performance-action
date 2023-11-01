@@ -131,10 +131,26 @@ try {
 	process.exit( 1 );
 }
 
+/**
+ * Returns a Markdown link to a Git commit on the current GitHub repository.
+ *
+ * For example, turns `a5c3785ed8d6a35868bc169f07e40e889087fd2e`
+ * into (https://github.com/wordpress/wordpress-develop/commit/36fe58a8c64dcc83fc21bddd5fcf054aef4efb27)[36fe58a].
+ *
+ * @param {string} sha Commit SHA.
+ * @return string Link
+ */
+function linkToSha( sha ) {
+	const url = process.env.REPOSITORY_URL;
+	return `[${ sha.slice( 0, 7 ) }](${ url }/commit/${ sha })`;
+}
+
 let summaryMarkdown = `**Performance Test Results**\n\n`;
 
 if ( process.env.GITHUB_SHA ) {
-	summaryMarkdown += `Performance test results for ${ process.env.GITHUB_SHA } are in 🛎️!\n\n`;
+	summaryMarkdown += `Performance test results for ${ linkToSha(
+		process.env.GITHUB_SHA
+	) } are in 🛎️!\n\n`;
 } else {
 	summaryMarkdown += `Performance test results are in 🛎️!\n\n`;
 }
@@ -195,7 +211,9 @@ for ( const { file, title, results } of afterStats ) {
 		/**
 		 * @type {Record<string, string>}
 		 */
-		const diffResult = {};
+		const diffResult = {
+			Run: i,
+		};
 
 		for ( const [ key, values ] of Object.entries( newResult ) ) {
 			// Only do comparison if the number of results is the same.
