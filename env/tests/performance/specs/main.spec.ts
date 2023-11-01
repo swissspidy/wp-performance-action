@@ -30,7 +30,7 @@ test.describe( 'Tests', () => {
 
 	for ( const url of urlsToTest ) {
 		for ( let i = 1; i <= iterations; i++ ) {
-			test( `Measure load time metrics (${ i } of ${ iterations })`, async ( {
+			test( `URL: "${ url }" (${ i } of ${ iterations })`, async ( {
 				page,
 				metrics,
 			} ) => {

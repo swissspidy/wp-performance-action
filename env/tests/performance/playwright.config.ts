@@ -18,12 +18,20 @@ process.env.STORAGE_STATE_PATH ??= join(
 process.env.TEST_ITERATIONS ??= '20';
 process.env.TEST_REPETITIONS ??= '2';
 
+const reporter = [ [ './config/performance-reporter.ts' ] ];
+
+if ( process.env.SHARD ) {
+	reporter.unshift( [ 'blob' ] );
+}
+
+if ( process.env.DEBUG ) {
+	reporter.unshift( [ 'list' ] );
+}
+
 const config = defineConfig( {
 	...baseConfig,
 	globalSetup: require.resolve( './config/global-setup.ts' ),
-	reporter: process.env.SHARD
-		? [ [ 'blob' ], [ './config/performance-reporter.ts' ] ]
-		: [ [ 'list' ], [ './config/performance-reporter.ts' ] ],
+	reporter,
 	forbidOnly: !! process.env.CI,
 	workers: 1,
 	retries: 0,
