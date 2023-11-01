@@ -106,6 +106,7 @@ runs:
         REQUIRED_THEMES=$(cat <<-END
         https://downloads.wordpress.org/theme/twentytwentyone.zip
         https://downloads.wordpress.org/theme/twentytwentythree.zip
+        END
         )
 
         jq -n \
