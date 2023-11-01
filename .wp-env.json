@@ -1,9 +1,0 @@
-{
-  "core": "WordPress/WordPress#master",
-  "plugins": [
-    "https://downloads.wordpress.org/plugin/performance-lab.zip"
-  ],
-  "config": {
-    "PERFLAB_DISABLE_OBJECT_CACHE_DROPIN": true
-  }
-}

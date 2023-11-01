@@ -1,0 +1,21 @@
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+    - main
+    - 'releases/*'
+
+jobs:
+  basic:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run performance tests
+      uses: ./
+      with:
+        urls: |
+          /
+          /sample/page/
