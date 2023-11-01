@@ -16,6 +16,18 @@ inputs:
     required: true
     description: 'URLs to test'
     default: ''
+  plugins:
+    required: false
+    description: 'Plugin(s) to install, separated by newline. Directory path or a ZIP URL'
+    default: ''
+  themes:
+    required: false
+    description: 'Theme(s) to install, separated by newline. Directory path or a ZIP URL'
+    default: ''
+  active-theme:
+    required: false
+    description: 'Theme to activate for the test'
+    default: 'twentytwentyone',
   shard:
     required: false
     description: 'Shard to use if running tests in parallel in a matrix'
@@ -29,7 +41,7 @@ inputs:
     description: 'Number of iterations (loops) within a single run'
     default: '20'
   action:
-    description: 'Action to perform, can be either test or merge-reports'
+    description: 'Action to perform, can be either "test" or "merge-reports"'
     required: false
     default: 'test'
   previous-results:
@@ -77,15 +89,44 @@ runs:
       run: |
         npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
         npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
+        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
       if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Install user-provided themes and plugins
+      run: |
+        REQUIRED_PLUGINS=$(cat <<-END
+        https://downloads.wordpress.org/plugin/performance-lab.zip
+        END
+        )
+        REQUIRED_THEMES=$(cat <<-END
+        https://downloads.wordpress.org/theme/twentytwentyone.zip
+        https://downloads.wordpress.org/theme/twentytwentythree.zip
+        )
+
+        jq -n \
+        --arg rp "$REQUIRED_PLUGINS" \
+        --arg p "$PLUGINS" \
+        --arg t "$THEMES" \
+        --arg rt "$REQUIRED_THEMES" \
+        '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
+        > .wp-env.override.json
+      if: ${{ inputs.action == 'test' }}
+      env:
+        PLUGINS: ${{ inputs.plugins }}
+        THEMES: ${{ inputs.themes }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Prepare test site
       run: |
+        npm run wp-env run tests-cli wp theme activate $THEME --quiet
         npm run wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
         npm run wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
       if: ${{ inputs.action == 'test' }}
+      env:
+        THEME: ${{ inputs.active-theme }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 

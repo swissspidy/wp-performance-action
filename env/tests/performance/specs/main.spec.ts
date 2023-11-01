@@ -11,7 +11,6 @@ test.describe( 'Tests', () => {
 	// Run *once* before *all* iterations.
 	// Ideal for setting up the site for this particular test.
 	test.beforeAll( async ( { requestUtils } ) => {
-		await requestUtils.activateTheme( 'twentytwentyone' );
 		await requestUtils.request.get(
 			`${ requestUtils.baseURL }/?reset_helper`
 		);
