@@ -35,10 +35,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Debugging
+      run: |
+        pwd
+        ls env/
+        ls ${{ github.action_path }}/
+        ls ${{ github.action_path }}/env/
+      shell: 'bash'
+
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version-file: '${{ github.action_path }}/env/.nvmrc'
+        node-version-file: '.nvmrc'
         cache: npm
 
     - name: Install dependencies
