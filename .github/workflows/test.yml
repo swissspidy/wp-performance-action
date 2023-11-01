@@ -59,7 +59,7 @@ jobs:
         plugins: |
           ./dummy-plugin
 
-  complex-matrix:
+  matrix:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
@@ -80,13 +80,13 @@ jobs:
           ./dummy-plugin
         shard: ${{ matrix.shard }}
 
-    merge-reports:
-      # Merge reports after playwright-tests, even if some shards have failed
-      if: always()
-      needs: [complex-matrix]
-      runs-on: ubuntu-latest
-      steps:
-      - name: Merge performance test results
-        uses: ./
-        with:
-          action: 'merge-reports'
+  merge-reports:
+    # Merge reports after playwright-tests, even if some shards have failed
+    if: always()
+    needs: [matrix]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Merge performance test results
+      uses: ./
+      with:
+        action: 'merge-reports'
