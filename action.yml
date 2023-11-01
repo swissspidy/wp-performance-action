@@ -65,6 +65,7 @@ runs:
         echo github.action_path: ${{ github.action_path }}
         echo GITHUB_ACTION_PATH: $GITHUB_ACTION_PATH
         echo "PERF_ACTION_PATH=$(realpath ${{ github.action_path }})" >> $GITHUB_ENV
+        realpath ${{ github.action_path }}
       shell: 'bash'
 #
 #    - name: Setup Node
