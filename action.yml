@@ -67,7 +67,7 @@ runs:
 
     - name: Import mock data
       run: |
-        npm run wp-env run tests-cli curl https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
+        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
         npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
@@ -75,14 +75,14 @@ runs:
 
     - name: Prepare test site
       run: |
-        npm run wp-env run cli -- config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
-        npm run wp-env run cli -- config set DISABLE_WP_CRON true --raw --type=constant
+        npm run wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
+        npm run wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: List defined constants
-      run: npm run wp-env run cli -- config list --path=/var/www/${{ env.LOCAL_DIR }}
+      run: npm run wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
       if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
