@@ -39,14 +39,11 @@ jobs:
       run: npm ci
 
 # Here's where the plugin/theme would run their custom build process
-# and configure the server environment.
-
-    - name: Start server
-      run: npx wp-env start
+# and then provide their slug to the action for installing it.
 
     - name: Run performance tests
       uses: ./
       with:
         urls: |
-          http://localhost:8889/
-          http://localhost:8889/?p=1
+          /
+          /sample/page/

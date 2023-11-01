@@ -1,17 +1,135 @@
-name: 'wp-performance-tests'
-description: 'Run performance tests for WordPress sites'
+name: 'WP Performance Tests'
+description: 'Measure performance metrics for your WordPress project'
 author: 'Pascal Birchler'
 branding:
   color: 'blue'
   icon: 'trending-up'
 inputs:
-  repo-token:
-    description: 'The GITHUB_TOKEN secret'
+  github-token:
+    description: 'The GitHub token used to create PR comments'
     required: false
     default: ${{ github.token }}
+  debug:
+    description: 'Whether to log additional debugging information'
+    default: ${{ runner.debug == '1' }}
   urls:
     required: true
     description: 'URLs to test'
+    default: ''
+  shard:
+    required: false
+    description: 'Shard to use if running tests in parallel in a matrix'
+    default: '1/1'
+  repetitions:
+    required: false
+    description: 'Number of times the tests should be repeated'
+    default: '2'
+  iterations:
+    required: false
+    description: 'Number of iterations (loops) within a single run'
+    default: '20'
+  action:
+    description: 'Action to perform, can be either test or merge-reports'
+    required: false
+    default: 'test'
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: "composite"
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      working-directory: ${{ github.action_path }}/env
+      with:
+        node-version-file: '.nvmrc'
+        cache: npm
+
+    - name: Install dependencies
+      run: npm ci
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Start WordPress
+      run: npm run wp-env start
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Update permalink structure
+      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Import mock data
+      run: |
+        npm run wp-env run tests-cli curl https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
+        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Prepare test site
+      run: |
+        npm run env:cli -- config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
+        npm run env:cli -- config set DISABLE_WP_CRON true --raw --type=constant
+      if: ${{ inputs.action == 'test' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: List defined constants
+      run: npm run env:cli -- config list --path=/var/www/${{ env.LOCAL_DIR }}
+      if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Run tests
+      run: |
+        npm run test:performance $ADDITIONAL_ARGS
+        mv ${{ env.WP_ARTIFACTS_PATH }}/performance-results.json ${{ runner.temp }}/results_after.json
+      if: ${{ inputs.action == 'test' }}
+      env:
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+        SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}
+        ADDITIONAL_ARGS: ${{ inputs.shard != '1/1' && format('-- --shard={0}', inputs.shard) || '' }}
+        URLS_TO_TEST: ${{ inputs.url }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Merge into single performance report
+      run: npm run test:performance:merge-reports
+      if: ${{ inputs.action == 'merge' }}
+      env:
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Print results
+      run: |
+        if [ -f "${{ runner.temp }}/results_before.json" ]; then
+          npm run test:performance:results ${{ runner.temp }}/results_after.json ${{ runner.temp }}/results_before.json
+        else
+          npm run test:performance:results ${{ runner.temp }}/results_after.json
+        fi;
+      if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Add workflow summary
+      run: cat ${{ env.WP_ARTIFACTS_PATH }}/performance-results.md >> $GITHUB_STEP_SUMMARY
+      if: ${{ inputs.action == 'test' }}
+      env:
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
+    - name: Upload performance results
+      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) }}
+      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      with:
+        name: performance-results
+        path: ${{ env.WP_ARTIFACTS_PATH }}/performance-results.json
