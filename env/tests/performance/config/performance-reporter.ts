@@ -97,15 +97,13 @@ class PerformanceReporter implements Reporter {
 			} );
 		}
 
-		if ( ! this.shard ) {
-			writeFileSync(
-				join(
-					process.env.WP_ARTIFACTS_PATH as string,
-					'performance-results.json'
-				),
-				JSON.stringify( summary, null, 2 )
-			);
-		}
+		writeFileSync(
+			join(
+				process.env.WP_ARTIFACTS_PATH as string,
+				'performance-results.json'
+			),
+			JSON.stringify( summary, null, 2 )
+		);
 	}
 }
 
