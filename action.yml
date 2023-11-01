@@ -31,7 +31,7 @@ inputs:
   shard:
     required: false
     description: 'Shard to use if running tests in parallel in a matrix.'
-    default: '1/1'
+    default: ''
   repetitions:
     required: false
     description: 'Number of times the tests should be repeated.'
