@@ -131,15 +131,14 @@ runs:
         --arg t "$THEMES" \
         --arg rt "$REQUIRED_THEMES" \
         '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
-        > .wp-env.override.json
+        > ${{ github.action_path }}/env/.wp-env.override.json
 
-        cat .wp-env.override.json
+        cat ${{ github.action_path }}/env/.wp-env.override.json
       if: ${{ inputs.action == 'test' }}
       env:
         PLUGINS: ${{ inputs.plugins }}
         THEMES: ${{ inputs.themes }}
       shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
 
     - name: Start WordPress
       run: npm run wp-env start

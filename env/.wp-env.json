@@ -13,6 +13,8 @@
 		"wp-content/mu-plugins": "./tests/wp-env/mu-plugins"
 	},
 	"config": {
+		"WP_DEBUG": false,
+		"SCRIPT_DEBUG": false,
 		"PERFLAB_DISABLE_OBJECT_CACHE_DROPIN": false
 	}
 }
