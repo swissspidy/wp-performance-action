@@ -83,10 +83,9 @@ jobs:
     merge-reports:
       # Merge reports after playwright-tests, even if some shards have failed
       if: always()
-      needs: [playwright-tests]
+      needs: [complex-matrix]
       runs-on: ubuntu-latest
       steps:
-
       - name: Merge performance test results
         uses: ./
         with:
