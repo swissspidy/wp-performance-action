@@ -1,0 +1,42 @@
+name: 'build-test'
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+    - main
+    - 'releases/*'
+
+jobs:
+  matrix:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run performance tests
+      uses: ./
+      id: run-tests
+      with:
+        urls: |
+          /
+          /sample/page/
+        plugins: |
+          ./dummy-plugin
+        shard: ${{ matrix.shard }}
+
+  merge-reports:
+    # Merge reports after playwright-tests, even if some shards have failed
+    if: always()
+    needs: [matrix]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Merge performance test results
+      uses: ./
+      with:
+        action: 'merge'
