@@ -132,8 +132,6 @@ runs:
         --arg rt "$REQUIRED_THEMES" \
         '{plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
         > ${{ github.action_path }}/env/.wp-env.override.json
-
-        cat ${{ github.action_path }}/env/.wp-env.override.json
       if: ${{ inputs.action == 'test' }}
       env:
         PLUGINS: ${{ inputs.plugins }}
@@ -182,7 +180,8 @@ runs:
       run: npm run test:performance $ADDITIONAL_ARGS
       if: ${{ inputs.action == 'test' }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
+        BLOB_REPORT_PATH: ${{ github.action_path }}/env/blob-report
         SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}
         ADDITIONAL_ARGS: ${{ inputs.shard != '1/1' && format('-- --shard={0}', inputs.shard) || '' }}
         URLS_TO_TEST: ${{ inputs.urls }}
@@ -213,7 +212,7 @@ runs:
         fi;
       if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
         PREVIOUS_RESULTS: ${{ inputs.previous-results }}
         REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
       shell: 'bash'
@@ -223,7 +222,7 @@ runs:
       run: cat $WP_ARTIFACTS_PATH/performance-results.md >> $GITHUB_STEP_SUMMARY
       if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
@@ -232,13 +231,15 @@ runs:
       run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
       if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/artifacts
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
 
     - name: Share blob report
       id: share-blob-report
-      run: echo "blob-report=${{ github.action_path }}/blob-report" >> $GITHUB_OUTPUT
+      run: echo "blob-report=$BLOB_REPORT_PATH" >> $GITHUB_OUTPUT
       if: ${{ inputs.shard != '' }}
+      env:
+        BLOB_REPORT_PATH: ${{ github.action_path }}/env/blob-report
       shell: 'bash'
 
     # Work around https://github.com/actions/upload-artifact/issues/176
