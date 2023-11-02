@@ -152,7 +152,7 @@ runs:
         --arg p "$PLUGINS" \
         --arg t "$THEMES" \
         --arg rt "$REQUIRED_THEMES" \
-        '{wpVersion: $wp, plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
+        '{core: $wp, plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
         > ${{ env.PERF_ACTION_PATH }}/env/.wp-env.override.json
         
         cat ${{ env.PERF_ACTION_PATH }}/env/.wp-env.override.json
