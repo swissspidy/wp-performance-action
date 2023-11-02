@@ -6,11 +6,11 @@ branding:
   icon: 'trending-up'
 inputs:
   github-token:
-    description: 'The GitHub token used to create PR comments'
+    description: 'The GitHub token used to create PR comments.'
     required: false
     default: ${{ github.token }}
   debug:
-    description: 'Whether to log additional debugging information'
+    description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
   urls:
     required: true
@@ -18,11 +18,11 @@ inputs:
     default: ''
   plugins:
     required: false
-    description: 'Plugin(s) to install, separated by newline. Supports directory paths and ZIP URLs'
+    description: 'List of plugins to install, separated by newline. Supports directory paths and ZIP URLs.'
     default: ''
   themes:
     required: false
-    description: 'Theme(s) to install, separated by newline. Supports directory paths and ZIP URLs'
+    description: 'List of themes to install, separated by newline. Supports directory paths and ZIP URLs.'
     default: ''
   active-theme:
     required: false
