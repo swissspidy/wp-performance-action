@@ -16,7 +16,6 @@
 		"@playwright/test": "^1.39.0",
 		"@wordpress/e2e-test-utils-playwright": "^0.12.0",
 		"@wordpress/env": "^8.10.0",
-		"patch-package": "^8.0.0",
 		"tablemark": "^3.0.0"
 	},
 	"devDependencies": {
@@ -25,7 +24,6 @@
 		"prettier": "npm:wp-prettier@^3.0.3"
 	},
 	"scripts": {
-		"postinstall": "patch-package",
 		"lint": "wp-scripts lint-js",
 		"format": "wp-scripts format",
 		"test:performance": "wp-scripts test-playwright --config tests/performance/playwright.config.ts",
