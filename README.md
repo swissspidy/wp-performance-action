@@ -147,3 +147,41 @@ steps:
       iterations: 5
       repetitions: 1
 ```
+
+### Running tests in parallel (sharding)
+
+```yaml
+jobs:
+  matrix:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/4, 2/4, 3/4, 4/4]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run performance tests
+      uses: swissspidy/wp-performance-action@main
+      id: run-tests
+      with:
+        urls: |
+          /
+          /sample-page/
+        plugins: |
+          ./my-awesome-plugin
+        shard: ${{ matrix.shard }}
+
+  merge-reports:
+    if: always()
+    needs: [matrix]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Merge performance test results
+      uses: swissspidy/wp-performance-action@main
+      with:
+        action: 'merge'
+```
