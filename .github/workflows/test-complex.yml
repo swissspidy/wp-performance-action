@@ -25,3 +25,4 @@ jobs:
           https://downloads.wordpress.org/plugin/wordpress-seo.zip
         iterations: 5
         repetitions: 1
+        wpVersion: 'trunk'
