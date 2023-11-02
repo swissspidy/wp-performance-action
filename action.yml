@@ -147,7 +147,7 @@ runs:
         fi
 
         jq -n \
-        --arg wp "$WP_VERSION" \
+        --argjson wp "$WP_VERSION" \
         --arg rp "$REQUIRED_PLUGINS" \
         --arg p "$PLUGINS" \
         --arg t "$THEMES" \
