@@ -10,64 +10,140 @@ It collects data from the `Server-Timing` header and runs Lighthouse on a given 
 
 ## Usage
 
-### Basic Example
+See [action.yml](action.yml)
+
+<!-- start usage -->
+```yaml
+- uses: swissspidy/wp-performance-action@main
+  with:
+    # Personal access token (PAT) used to comment on pull requests.
+    #
+    # [Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
+    #
+    # Default: ${{ github.token }}
+    github-token: ''
+
+    # Whether to log additional debugging information
+    #
+    # Default: ${{ runner.debug == '1' }}
+    debug: ''
+
+    # List of URLs on the WordPress site to test.
+    # Each URL should be separated with new lines.
+    #
+    # Default: ''
+    urls: ''
+
+    # List of plugins to install.
+    # Each plugin should be separated with new lines.
+    # Supports paths to local directories or ZIP URLs.
+    # Performance Lab (performance-lab) is always installed.
+    #
+    # Default: ''
+    plugins: ''
+
+    # List of themes to install.
+    # Each theme should be separated with new lines.
+    # Supports paths to local directories or ZIP URLs.
+    # Twenty Twenty-One (twentytwentyone) and Twenty Twenty-Three (twentytwentythree)
+    # are always installed.
+    #
+    # Default: ''
+    themes: ''
+
+    # Theme to activate on the site.
+    # Theme needs to be already installed.
+    #
+    # Default: 'twentytwentyone'
+    active-theme: ''
+
+    # WordPress version to use.
+    # Supports aliases such as latest, nightly, or trunk.
+    # Also supports ZIP URLs or a Git reference from https://github.com/WordPress/wordpress
+    # to install a specific version.
+    #
+    # Default: 'latest'
+    wp-version: ''
+
+    # PHP version to use.
+    # Defaults to whatever version is the default
+    # in the Docker-maintained WordPress image
+    # (currently 8.0 as of November 2023)
+    #
+    # Default: 'auto'
+    php-version: ''
+ 
+    # Number of times the tests should be repeated.
+    #
+    # Default: 2
+    repetitions: ''
+
+    # Number of iterations (loops) within a single run.
+    #
+    # Default: 20
+    iterations: ''
+
+    # Shard to use if running tests in parallel.
+    # Valid values are 1/2, 1/4, etc.
+    #
+    # Default: ''
+    shard: ''
+
+
+    # Action to perform, can be either "test" or "merge".
+    # Merging is needed when running tests in parallel
+    # in a test matrix, where you later need to merge
+    # the results from the individual jobs together.
+    #
+    # Default: 'test'
+    action: ''
+
+    # Path to a file with previous performance results for comparison.
+    # Useful when running tests for a pull request and
+    # the target branch, so that the performance impact can be measured.
+    #
+    # Default: ''
+    previous-results: ''
+
+```
+<!-- end usage -->
+
+### Basic
 
 Add a workflow (`.github/workflows/build-test.yml`):
 
 ```yaml
-name: 'build-test'
-on: # rebuild any PRs and main branch changes
-  pull_request:
-  push:
-    branches:
-    - main
-    - 'releases/*'
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: Set up Node
-      uses: actions/setup-node@v3.7.0
-      with:
-        node-version-file: '.nvmrc'
-
-    - name: Install dependencies
-      run: npm ci
-
-# Here's where you would install dependencies, run your custom build process, etc.
-
-    - name: Run performance tests
-      uses: swissspidy/wp-performance-action@main
-      with:
-        plugins: |
-          ./my-awesome-plugin
-        urls: |
-          /
-          /sample-page/
+steps:
+  - name: Checkout
+    uses: actions/checkout@v3
+  
+  - name: Run performance tests
+    uses: swissspidy/wp-performance-action@main
+    with:
+      plugins: |
+        ./my-awesome-plugin
+      urls: |
+        /
+        /sample-page/
 ```
 
-### Advanced Example
+### Advanced
 
 ```yaml
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-
-    - name: Run performance tests
-      uses: ./
-      with:
-        urls: |
-          /
-          /sample-page/
-        plugins: |
-          ./my-awesome-plugin
-          https://downloads.wordpress.org/plugin/performant-translations.zip
-          https://downloads.wordpress.org/plugin/wordpress-seo.zip
-        iterations: 5
-        repetitions: 1
+steps:
+  - name: Checkout
+    uses: actions/checkout@v3
+  
+  - name: Run performance tests
+    uses: swissspidy/wp-performance-action@main
+    with:
+      urls: |
+        /
+        /sample-page/
+      plugins: |
+        ./my-awesome-plugin
+        https://downloads.wordpress.org/plugin/performant-translations.zip
+        https://downloads.wordpress.org/plugin/wordpress-seo.zip
+      iterations: 5
+      repetitions: 1
 ```
