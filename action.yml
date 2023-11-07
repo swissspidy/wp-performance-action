@@ -69,8 +69,8 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version-file: 'env/.nvmrc'
-        cache-dependency-path: 'env/package-lock.json'
+        node-version-file: ${{ github.action_path }}/env/.nvmrc
+        cache-dependency-path: ${{ github.action_path }}/env/package-lock.json
         cache: npm
 
     - name: Install dependencies
