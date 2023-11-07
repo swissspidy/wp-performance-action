@@ -89,7 +89,6 @@ See [action.yml](action.yml)
     # Default: ''
     shard: ''
 
-
     # Action to perform, can be either "test" or "merge".
     # Merging is needed when running tests in parallel
     # in a test matrix, where you later need to merge
@@ -104,7 +103,6 @@ See [action.yml](action.yml)
     #
     # Default: ''
     previous-results: ''
-
 ```
 <!-- end usage -->
 
