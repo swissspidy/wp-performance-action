@@ -78,7 +78,7 @@ runs:
     - name: Get relative action_path
       run: |
         REL_ACTION_PATH=$(node -p 'require("path").relative(process.env.GITHUB_WORKSPACE, process.env.ABS_ACTION_PATH)')
-        REL_ACTION_PATH=${REL_ACTION_PATH:-./}
+        REL_ACTION_PATH=${REL_ACTION_PATH:-.}
         echo "REL_ACTION_PATH=$REL_ACTION_PATH" >> $GITHUB_ENV
       shell: 'bash'
 
