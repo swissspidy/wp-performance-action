@@ -66,11 +66,21 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # setup-node expects paths relative to checked-out repo. But we
+    # want to use package.json and .nvmrc from action repo. So, we'll provide
+    # them a path relative to GITHUB_WORKSPACE
+    # See https://github.com/actions/setup-node/issues/852
+    - id: action_relative_path
+      run: |
+        action_path=$(node -p 'require("path").relative(process.env.GITHUB_WORKSPACE, "${{ github.action_path }}")')
+        echo "action_path=${action_path}" >> "$GITHUB_OUTPUT"
+      shell: bash
+
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version-file: ${{ github.action_path }}/env/.nvmrc
-        cache-dependency-path: ${{ github.action_path }}/env/package-lock.json
+        node-version: ${{ steps.action_relative_path.outputs.action_path }}/env/.nvmrc
+        cache-dependency-path: ${{ steps.action_relative_path.outputs.action_path }}/env/package-lock.json
         cache: npm
 
     - name: Install dependencies
