@@ -113,7 +113,7 @@ Add a workflow (`.github/workflows/build-test.yml`):
 ```yaml
 steps:
   - name: Checkout
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
   
   - name: Run performance tests
     uses: swissspidy/wp-performance-action@main
@@ -130,7 +130,7 @@ steps:
 ```yaml
 steps:
   - name: Checkout
-    uses: actions/checkout@v3
+    uses: actions/checkout@v4
   
   - name: Run performance tests
     uses: swissspidy/wp-performance-action@main
@@ -182,4 +182,30 @@ jobs:
       uses: swissspidy/wp-performance-action@main
       with:
         action: 'merge'
+```
+
+### Performance results output
+
+The `results` step output contains information regarding where the raw performance results numbers are stored.
+This output can be used for a variety of purposes such as logging or for a comparison with previous results.
+
+In addition to that, the raw results are also uploaded as a [workflow artifact](https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts).
+
+```yaml
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
+  
+  - name: Run performance tests
+    uses: swissspidy/wp-performance-action@main
+    id: performance-tests
+    with:
+      plugins: |
+        ./my-awesome-plugin
+      urls: |
+        /
+        /sample-page/
+
+  - name: 'Echo results path'
+    run: echo ${{steps.performance-tests.outputs.results}}
 ```
