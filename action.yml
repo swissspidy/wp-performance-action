@@ -86,7 +86,7 @@ runs:
       uses: actions/setup-node@v4
       with:
         node-version-file: ${{ env.REL_ACTION_PATH }}/env/.nvmrc
-        cache-dependency-path: ${{ env.REL_ACTION_PATH }}/env/package-lock.json
+        cache-dependency-path: ${{ env.ABS_ACTION_PATH }}/env/package-lock.json
         cache: 'npm'
 
     - name: Install dependencies
