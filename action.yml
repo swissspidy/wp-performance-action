@@ -85,7 +85,7 @@ runs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ env.REL_ACTION_PATH }}/env/.nvmrc
+        node-version-file: ${{ env.REL_ACTION_PATH }}/env/.nvmrc
         cache-dependency-path: ${{ env.REL_ACTION_PATH }}/env/package-lock.json
         cache: 'npm'
 
