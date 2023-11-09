@@ -23,11 +23,11 @@ const reporter: ReporterDescription[] = [
 	[ './config/performance-reporter.ts' ],
 ];
 
-if ( process.env.SHARD ) {
+if ( process.env.SHARD !== '' ) {
 	reporter.unshift( [ 'blob', { outputDir: process.env.BLOB_REPORT_PATH } ] );
 }
 
-if ( process.env.DEBUG ) {
+if ( process.env.DEBUG == 'true' ) {
 	reporter.unshift( [ 'list' ] );
 }
 

@@ -9,6 +9,10 @@ inputs:
     description: 'The GitHub token used to create PR comments.'
     required: false
     default: ${{ github.token }}
+  create-comment:
+    description: 'Whether to create PR comments with performance results.'
+    required: false
+    default: ''
   debug:
     description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
@@ -90,18 +94,20 @@ runs:
         cache: ''
 
     - name: Install dependencies
-      run: npm ci
+      run: npm ci ${{ inputs.debug != 'true' && '--silent' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx ${{ inputs.debug != 'true' && '--silent' }} playwright install --with-deps
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Prepare wp-env
       run: |
+        echo "Preparing wp-env..."
+
         PLUGINS=${PLUGINS%$'\n'}
         THEMES=${THEMES%$'\n'}
 
@@ -177,7 +183,10 @@ runs:
         '{core: $wp, phpVersion: $php, plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
         > ${{ env.ABS_ACTION_PATH }}/env/.wp-env.override.json
         
-        cat ${{ env.ABS_ACTION_PATH }}/env/.wp-env.override.json
+        if [[ ${{ inputs.debug == 'true' }} == true ]]; then
+          echo "Generated .wp-env.override.json file:"
+          cat ${{ env.ABS_ACTION_PATH }}/env/.wp-env.override.json
+        fi
       if: ${{ inputs.action == 'test' }}
       env:
         PLUGINS: ${{ inputs.plugins }}
@@ -187,32 +196,32 @@ runs:
       shell: 'bash'
 
     - name: Start WordPress
-      run: npm run wp-env start
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env start
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Update permalink structure
-      run: npm run wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Import mock data
       run: |
-        npm run wp-env run tests-cli wp plugin list
-        npm run wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
-        npm run wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
-        npm run wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp plugin list
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Prepare test site
       run: |
-        npm run wp-env run tests-cli wp theme activate $THEME --quiet
-        npm run wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
-        npm run wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp theme activate $THEME --quiet
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
+        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
       if: ${{ inputs.action == 'test' }}
       env:
         THEME: ${{ inputs.active-theme }}
@@ -220,13 +229,13 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: List defined constants
-      run: npm run wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
       if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Run tests
-      run: npm run test:performance $ADDITIONAL_ARGS
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance $ADDITIONAL_ARGS
       if: ${{ inputs.action == 'test' }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
@@ -247,7 +256,7 @@ runs:
         path: performance-blob-report
 
     - name: Merge into single performance report
-      run: npm run test:performance:merge-reports ${{steps.download.outputs.download-path}}
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:merge-reports ${{steps.download.outputs.download-path}}
       if: ${{ inputs.action == 'merge' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
@@ -255,9 +264,9 @@ runs:
     - name: Print results
       run: |
         if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
-          npm run test:performance:results $WP_ARTIFACTS_PATH/performance-results.json $PREVIOUS_RESULTS
+          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $WP_ARTIFACTS_PATH/performance-results.json $PREVIOUS_RESULTS
         else
-          npm run test:performance:results
+          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results
         fi;
       if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
       env:
@@ -274,6 +283,24 @@ runs:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
+
+    - name: Check if a comment was already made
+      id: find-comment
+      if: ${{ inputs.create-comment == 'true' }}
+      uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body-includes: Performance test results for
+
+    - name: Comment on PR with test results
+      uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa
+      if: ${{ inputs.create-comment == 'true' }}
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        edit-mode: replace
+        body-path: ${{ github.action_path }}/env/artifacts/performance-results.md
+        token: ${{ inputs.github-token }}
 
     - name: Share raw results
       id: share-results

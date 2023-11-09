@@ -23,6 +23,12 @@ See [action.yml](action.yml)
     # Default: ${{ github.token }}
     github-token: ''
 
+    # Whether to create PR comments with performance results.
+    # Might require a custom `github-token` to be set.
+    #
+    # Default: false
+    create-comment: ''
+
     # Whether to log additional debugging information
     #
     # Default: ${{ runner.debug == '1' }}
