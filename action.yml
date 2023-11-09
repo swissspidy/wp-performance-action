@@ -9,6 +9,10 @@ inputs:
     description: 'The GitHub token used to create PR comments.'
     required: false
     default: ${{ github.token }}
+  create-comment:
+    description: 'Whether to create PR comments with performance results.'
+    required: false
+    default: ''
   debug:
     description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
@@ -274,6 +278,24 @@ runs:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
+
+    - name: Check if a comment was already made
+      id: find-comment
+      if: ${{ inputs.create-comment == 'true' }}
+      uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body-includes: Performance test results for
+
+    - name: Comment on PR with test results
+      uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa
+      if: ${{ inputs.create-comment == 'true' }}
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        edit-mode: replace
+        body-path: ${{ github.action_path }}/env/artifacts/performance-results.md
+        token: ${{ inputs.github-token }}
 
     - name: Share raw results
       id: share-results
