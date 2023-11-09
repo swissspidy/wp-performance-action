@@ -1,4 +1,4 @@
-name: 'build-test'
+name: 'test-pr-comment'
 on: # rebuild any PRs and main branch changes
   pull_request:
   push:
@@ -20,3 +20,4 @@ jobs:
           /
           /sample-page/
         create-comment: true
+        github-token: ${{ secrets.PR_COMMENT_TOKEN }}
