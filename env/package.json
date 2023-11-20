@@ -19,7 +19,7 @@
 		"tablemark": "^3.0.0"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^26.16.0",
+		"@wordpress/scripts": "^26.17.0",
 		"eslint-plugin-playwright": "^0.18.0",
 		"prettier": "npm:wp-prettier@^3.0.3"
 	},
