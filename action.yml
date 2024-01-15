@@ -252,7 +252,6 @@ runs:
       if: ${{ inputs.action == 'merge' }}
       id: download
       with:
-        path: performance-blob-report
         pattern: performance-blob-report-*
         merge-multiple: true
 
