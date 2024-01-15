@@ -329,6 +329,6 @@ runs:
       uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
       if: ${{ success() && inputs.shard != '' }}
       with:
-        name: performance-blob-report
+        name: performance-blob-report-${{ inputs.shard }}
         path: ${{ env.ABS_ACTION_PATH }}/env/blob-report
         retention-days: 1
