@@ -15,7 +15,7 @@
 	"dependencies": {
 		"@playwright/test": "^1.40.1",
 		"@wordpress/e2e-test-utils-playwright": "^0.16.0",
-		"@wordpress/env": "^9.0.0",
+		"@wordpress/env": "^9.1.0",
 		"tablemark": "^3.0.0"
 	},
 	"devDependencies": {
