@@ -287,7 +287,7 @@ runs:
     - name: Check if a comment was already made
       id: find-comment
       if: ${{ github.event_name == 'pull_request' && inputs.create-comment == 'true' }}
-      uses: peter-evans/find-comment@d5fe37641ad8451bdd80312415672ba26c86575e
+      uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e
       with:
         issue-number: ${{ github.event.pull_request.number }}
         body-includes: Performance test results for
