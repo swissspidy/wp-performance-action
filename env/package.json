@@ -13,7 +13,7 @@
 	},
 	"homepage": "https://github.com/swissspidy/wp-performance-action#readme",
 	"dependencies": {
-		"@playwright/test": "^1.43.1",
+		"@playwright/test": "^1.44.0",
 		"@wordpress/e2e-test-utils-playwright": "^0.25.0",
 		"@wordpress/env": "^9.9.0",
 		"tablemark": "^3.1.0"
