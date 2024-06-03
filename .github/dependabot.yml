@@ -9,3 +9,7 @@ updates:
   directory: /env
   schedule:
     interval: weekly
+  groups:
+    wp-packages:
+      patterns:
+        - '@wordpress/*'
