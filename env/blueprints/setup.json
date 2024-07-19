@@ -28,7 +28,7 @@
       },
       "options": {
         "activate": true,
-        "importThemeStarterContent": false
+        "importStarterContent": false
       }
     },
     {
@@ -39,7 +39,7 @@
       },
       "options": {
         "activate": false,
-        "importThemeStarterContent": false
+        "importStarterContent": false
       }
     },
     {
