@@ -104,6 +104,15 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
+    - name: Set up WordPress Playground
+      run: |
+        npm run playground server -- \
+        --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
+        --blueprint=./blueprints/setup.json \
+        --wp=$WP_VERSION
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
     - name: Prepare wp-env
       run: |
         echo "Preparing wp-env..."
@@ -195,49 +204,11 @@ runs:
         PHP_VERSION: ${{ inputs.php-version }}
       shell: 'bash'
 
-    - name: Start WordPress
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env start
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Update permalink structure
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp rewrite structure '/%postname%/' -- --hard
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Import mock data
-      run: |
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp plugin list
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli curl -s https://raw.githubusercontent.com/WordPress/theme-test-data/b9752e0533a5acbb876951a8cbb5bcc69a56474c/themeunittestdata.wordpress.xml -- --output /tmp/themeunittestdata.wordpress.xml
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp import /tmp/themeunittestdata.wordpress.xml -- --authors=create --quiet
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp plugin deactivate wordpress-importer --quiet
-      if: ${{ inputs.action == 'test' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Prepare test site
-      run: |
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp theme activate $THEME --quiet
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config set WP_HTTP_BLOCK_EXTERNAL true --raw --type=constant
-        npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config set DISABLE_WP_CRON true --raw --type=constant
-      if: ${{ inputs.action == 'test' }}
-      env:
-        THEME: ${{ inputs.active-theme }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: List defined constants
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} wp-env run tests-cli wp config list --path=/var/www/${{ env.LOCAL_DIR }}
-      if: ${{ inputs.action == 'test' && inputs.debug == 'true' }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
     - name: Run tests
       run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance $ADDITIONAL_ARGS
       if: ${{ inputs.action == 'test' }}
       env:
+        WP_BASE_URL: 'http://127.0.0.1:9400'
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
         BLOB_REPORT_PATH: ${{ github.action_path }}/env/blob-report
         SHARD: ${{ inputs.shard != '1/1' && inputs.shard || '' }}

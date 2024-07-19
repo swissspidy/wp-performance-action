@@ -1,0 +1,70 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/wp-admin/",
+  "preferredVersions": {
+    "php": "8.0",
+    "wp": "latest"
+  },
+  "phpExtensionBundles": ["kitchen-sink"],
+  "steps": [
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "DISABLE_WP_CRON": true
+      }
+    },
+    {
+      "step": "installPlugin",
+      "pluginZipFile": {
+        "resource": "wordpress.org/plugins",
+        "slug": "performance-lab"
+      }
+    },
+    {
+      "step": "installTheme",
+      "themeZipFile": {
+        "resource": "wordpress.org/themes",
+        "slug": "twentytwentyone"
+      },
+      "options": {
+        "activate": true,
+        "importThemeStarterContent": false
+      }
+    },
+    {
+      "step": "installTheme",
+      "themeZipFile": {
+        "resource": "wordpress.org/themes",
+        "slug": "twentytwentythree"
+      },
+      "options": {
+        "activate": false,
+        "importThemeStarterContent": false
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "permalink_structure": "/%postname%/"
+      }
+    },
+    {
+      "step": "importWxr",
+      "file": {
+        "resource": "url",
+        "url": "https://raw.githubusercontent.com/WordPress/theme-test-data/b47acf980696897936265182cb684dca648476c7/themeunittestdata.wordpress.xml"
+      }
+    },
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "WP_HTTP_BLOCK_EXTERNAL": true
+      }
+    },
+    {
+      "step": "login",
+      "username": "admin",
+      "password": "password"
+    }
+  ]
+}
