@@ -110,6 +110,8 @@ runs:
         --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
         --blueprint=./blueprints/setup.json \
         --wp=$WP_VERSION
+      env:
+        WP_VERSION: ${{ inputs.wp-version }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
