@@ -106,10 +106,11 @@ runs:
 
     - name: Set up WordPress Playground
       run: |
-        npm run playground server -- \
+        ./node_modules/@wp-playground/cli/wp-playground.js server -- \
         --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
         --blueprint=./blueprints/setup.json \
-        --wp=$WP_VERSION
+        --wp=$WP_VERSION \
+        &
       env:
         WP_VERSION: ${{ inputs.wp-version }}
       shell: 'bash'
