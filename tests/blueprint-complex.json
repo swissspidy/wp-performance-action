@@ -10,6 +10,11 @@
       "consts": {
         "WP_DEBUG": true
       }
+    },
+    {
+      "step": "activatePlugin",
+      "pluginName": "Dummy Plugin",
+      "pluginPath": "/wordpress/wp-content/plugins/dummy-plugin"
     }
   ]
 }
