@@ -127,8 +127,8 @@ runs:
         
         for i in "${PLUGINS[@]}"; do
           if [ ! -z i ]; then
-            PLUGIN_REALPATH=$(realpath $i);
-            PLUGIN_BASENAME=$(basename $i);
+            PLUGIN_REALPATH=$(realpath "${{ github.workspace }}/$i");
+            PLUGIN_BASENAME=$(basename $PLUGIN_REALPATH);
   
             ARGS+=("--mount=$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
             echo "$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME"
@@ -141,8 +141,8 @@ runs:
         
         for i in "${THEMES[@]}"; do
           if [ ! -z i ]; then
-            THEME_REALPATH=$(realpath $i);
-            THEME_BASENAME=$(basename $i);
+            THEME_REALPATH=$(realpath "${{ github.workspace }}/$i");
+            THEME_BASENAME=$(basename $THEME_REALPATH);
           
             ARGS+=("--mount=$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME")
             echo "$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME"
@@ -156,7 +156,7 @@ runs:
         echo "::group::Blueprint"
 
         if [ ! -z $BLUEPRINT ]; then
-          jq -f patch.jq --argfile patch $(realpath $BLUEPRINT) ./blueprints/setup.json > ./blueprints/tmp-merged.json
+          jq -f patch.jq --argfile patch $(realpath "${{ github.workspace }}/$BLUEPRINT") ./blueprints/setup.json > ./blueprints/tmp-merged.json
           ARGS+=(--blueprint=./blueprints/tmp-merged.json)
           cat ./blueprints/tmp-merged.json | jq '.'
         else

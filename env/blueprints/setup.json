@@ -15,7 +15,7 @@
     "performance-lab"
   ],
   "constants": {
-    "WP_HTTP_BLOCK_EXTERNAL": true
+    "WP_HTTP_BLOCK_EXTERNAL": "true"
   },
   "login": true,
   "siteOptions": {

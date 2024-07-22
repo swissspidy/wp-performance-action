@@ -5,6 +5,7 @@ const results: Record< string, number[] > = {};
 
 test.describe( 'Tests', () => {
 	test.use( {
+		// @ts-ignore
 		storageState: {}, // User will be logged out.
 	} );
 
