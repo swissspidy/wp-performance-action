@@ -11,18 +11,21 @@
   "features": {
     "networking": false
   },
+  "plugins": [
+    "performance-lab"
+  ],
+  "constants": {
+    "WP_HTTP_BLOCK_EXTERNAL": true
+  },
+  "login": true,
+  "siteOptions": {
+    "permalink_structure": "/%postname%/"
+  },
   "steps": [
     {
       "step": "defineWpConfigConsts",
       "consts": {
         "DISABLE_WP_CRON": true
-      }
-    },
-    {
-      "step": "installPlugin",
-      "pluginZipFile": {
-        "resource": "wordpress.org/plugins",
-        "slug": "performance-lab"
       }
     },
     {
@@ -48,28 +51,11 @@
       }
     },
     {
-      "step": "setSiteOptions",
-      "options": {
-        "permalink_structure": "/%postname%/"
-      }
-    },
-    {
       "step": "importWxr",
       "file": {
         "resource": "url",
         "url": "https://raw.githubusercontent.com/WordPress/theme-test-data/b47acf980696897936265182cb684dca648476c7/themeunittestdata.wordpress.xml"
       }
-    },
-    {
-      "step": "defineWpConfigConsts",
-      "consts": {
-        "WP_HTTP_BLOCK_EXTERNAL": true
-      }
-    },
-    {
-      "step": "login",
-      "username": "admin",
-      "password": "password"
     }
   ]
 }
