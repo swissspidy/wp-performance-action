@@ -25,7 +25,7 @@ jobs:
           /
           /sample-page/
         plugins: |
-          ./dummy-plugin
+          ./tests/dummy-plugin
         shard: ${{ matrix.shard }}
 
   merge-reports:

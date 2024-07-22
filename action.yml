@@ -16,26 +16,22 @@ inputs:
   debug:
     description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
-  # TODO: Remove in favor of blueprints
   urls:
     required: true
     description: 'URLs to test, separated by newline.'
     default: ''
-  # TODO: Remove in favor of blueprints
   plugins:
     required: false
-    description: 'List of plugins to install, separated by newline. Supports directory paths and ZIP URLs.'
+    description: 'List of plugin directory paths to mount, separated by newline.'
     default: ''
-  # TODO: Remove in favor of blueprints
   themes:
     required: false
-    description: 'List of themes to install, separated by newline. Supports directory paths and ZIP URLs.'
+    description: 'List of theme directory paths to mount, separated by newline.'
     default: ''
-  # TODO: Remove in favor of blueprints
-  active-theme:
+  blueprint:
     required: false
-    description: 'Theme to activate for the test.'
-    default: 'twentytwentyone'
+    description: 'Blueprint to use for setting up the environment.'
+    default: ''
   wp-version:
     required: false
     description: 'WordPress version to use.'
@@ -98,25 +94,80 @@ runs:
         cache: ''
 
     - name: Install dependencies
-      run: npm ci ${{ inputs.debug != 'true' && '--silent' }}
+      run: |
+        echo "::group::Install dependencies"
+        npm ci ${{ inputs.debug != 'true' && '--silent' }}
+        echo "::endgroup::"
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
-    - name: Install Playwright Browsers
-      run: npx ${{ inputs.debug != 'true' && '--silent' }} playwright install --with-deps
+    - name: Install Playwright browsers
+      run: |
+        echo "::group::Install Playwright browsers"
+        npx ${{ inputs.debug != 'true' && '--silent' }} playwright install --with-deps
+        echo "::endgroup::"
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
     - name: Set up WordPress Playground
       run: |
-        ./node_modules/@wp-playground/cli/wp-playground.js server \
-        --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
-        --blueprint=./blueprints/setup.json \
-        --wp=$WP_VERSION \
-        --php=$PHP_VERSION \
-        &
+        ARGS=()
+        
+        echo "::group::Mounting plugin directories"
+
+        ARGS+=("--mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins")
+        echo "./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins"
+        
+        for i in "${PLUGINS[@]}"; do
+          if [ ! -z i ]; then
+          PLUGIN_REALPATH=$(realpath $i);
+          PLUGIN_BASENAME=$(basename $i);
+
+          ARGS+=("--mount=$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
+          echo "$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME"
+          fi
+        done
+        
+        echo "::endgroup::"
+        
+        echo "::group::Mounting plugin directories"
+        
+        for i in "${THEMES[@]}"; do
+          if [ ! -z i ]; then
+          THEME_REALPATH=$(realpath $i);
+          THEME_BASENAME=$(basename $i);
+        
+          ARGS+=("--mount=$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME")
+          echo "$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME"
+          fi
+        done
+        
+        echo "::endgroup::"
+        
+        echo "::group::Blueprint"
+
+        if [ ! -z $BLUEPRINT ]; then
+          jq -f patch.jq --argfile patch $(realpath $BLUEPRINT) ./blueprints/setup.json > ./blueprints/tmp-merged.json
+          ARGS+=(--blueprint=./blueprints/tmp-merged.json)
+          cat ./blueprints/tmp-merged.json | jq '.'
+        else
+          ARGS+=(--blueprint=./blueprints/setup.json)
+          cat ./blueprints/setup.json | jq '.'
+        fi
+        
+        echo "::endgroup::"
+
+        ARGS+=(--wp=$WP_VERSION)
+        ARGS+=(--php=$PHP_VERSION)
+
+        echo "::group::Start Playground server"
+        ./node_modules/@wp-playground/cli/wp-playground.js server "${ARGS[@]}" &
+        echo "::endgroup::"
       env:
+        PLUGINS: ${{ inputs.plugins }}
+        THEMES: ${{ inputs.themes }}
+        BLUEPRINT: ${{ inputs.blueprint }}
         WP_VERSION: ${{ inputs.wp-version }}
         PHP_VERSION: ${{ inputs.php-version }}
       shell: 'bash'
