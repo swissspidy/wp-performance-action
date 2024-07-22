@@ -8,6 +8,7 @@ on: # rebuild any PRs and main branch changes
 
 jobs:
   matrix:
+    name: 'Run tests'
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
@@ -29,6 +30,7 @@ jobs:
         shard: ${{ matrix.shard }}
 
   merge-reports:
+    name: 'Merge reports'
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: [matrix]
