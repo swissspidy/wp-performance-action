@@ -16,18 +16,22 @@ inputs:
   debug:
     description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
+  # TODO: Remove in favor of blueprints
   urls:
     required: true
     description: 'URLs to test, separated by newline.'
     default: ''
+  # TODO: Remove in favor of blueprints
   plugins:
     required: false
     description: 'List of plugins to install, separated by newline. Supports directory paths and ZIP URLs.'
     default: ''
+  # TODO: Remove in favor of blueprints
   themes:
     required: false
     description: 'List of themes to install, separated by newline. Supports directory paths and ZIP URLs.'
     default: ''
+  # TODO: Remove in favor of blueprints
   active-theme:
     required: false
     description: 'Theme to activate for the test.'
@@ -114,99 +118,9 @@ runs:
         &
       env:
         WP_VERSION: ${{ inputs.wp-version }}
-      shell: 'bash'
-      working-directory: ${{ github.action_path }}/env
-
-    - name: Prepare wp-env
-      run: |
-        echo "Preparing wp-env..."
-
-        PLUGINS=${PLUGINS%$'\n'}
-        THEMES=${THEMES%$'\n'}
-
-        IFS=$'\n';
-
-        PLUGINS=($PLUGINS)
-        THEMES=($THEMES)
-
-        PLUGINS_ARRAY=()
-        for i in "${PLUGINS[@]}"; do
-          if [ ! -z i ]; then
-            if [[ "$i" == *"http"* ]]; then
-              PLUGINS_ARRAY+=($i)
-            else
-              PLUGINS_ARRAY+=$(realpath $i)
-            fi
-          fi
-        done
-
-        PLUGINS=$(printf "%s\n" "${PLUGINS_ARRAY[@]}")
-
-        THEMES_ARRAY=()
-        for i in "${THEMES[@]}"; do
-          if [ ! -z i ]; then
-            if [[ "$i" == *"http"* ]]; then
-              THEMES_ARRAY+=($i)
-            else
-              THEMES_ARRAY+=$(realpath $i)
-            fi
-          fi
-        done
-
-        THEMES=$(printf "%s\n" "${THEMES_ARRAY[@]}")
-
-        unset IFS;
-
-        REQUIRED_PLUGINS=$(cat <<-END
-        https://downloads.wordpress.org/plugin/wordpress-importer.zip
-        https://downloads.wordpress.org/plugin/performance-lab.zip
-        END
-        )
-        REQUIRED_THEMES=$(cat <<-END
-        https://downloads.wordpress.org/theme/twentytwentyone.zip
-        https://downloads.wordpress.org/theme/twentytwentythree.zip
-        END
-        )
-
-        if [[ $WP_VERSION == 'latest' ]]; then
-          WP_VERSION=null
-        elif [[ "$WP_VERSION" == "trunk" ]]; then
-          WP_VERSION="\"WordPress/WordPress#master\""
-        elif [[ "$WP_VERSION" == "nightly" ]]; then
-          WP_VERSION="\"https://wordpress.org/nightly-builds/wordpress-latest.zip"\"
-        elif [[ "$WP_VERSION" == *".zip"* ]]; then
-          WP_VERSION="\"$WP_VERSION\""
-        else
-          WP_VERSION="\"WordPress/WordPress#$WP_VERSION\""
-        fi
-
-        if [[ $PHP_VERSION == 'auto' ]]; then
-          PHP_VERSION=null
-        else
-          PHP_VERSION="\"$PHP_VERSION\""
-        fi
-
-        jq -n \
-        --argjson wp "$WP_VERSION" \
-        --argjson php "$PHP_VERSION" \
-        --arg rp "$REQUIRED_PLUGINS" \
-        --arg p "$PLUGINS" \
-        --arg t "$THEMES" \
-        --arg rt "$REQUIRED_THEMES" \
-        '{core: $wp, phpVersion: $php, plugins: [($rp | split("\n")), ($p | split("\n"))] | add, themes: [($rt | split("\n")), ($t | split("\n"))] | add}' \
-        > ${{ env.ABS_ACTION_PATH }}/env/.wp-env.override.json
-        
-        if [[ ${{ inputs.debug == 'true' }} == true ]]; then
-          echo "Generated .wp-env.override.json file:"
-          cat ${{ env.ABS_ACTION_PATH }}/env/.wp-env.override.json
-        fi
-      if: ${{ inputs.action == 'test' }}
-      env:
-        PLUGINS: ${{ inputs.plugins }}
-        THEMES: ${{ inputs.themes }}
-        WP_VERSION: ${{ inputs.wp-version }}
         PHP_VERSION: ${{ inputs.php-version }}
       shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
 
     - name: Run tests
       run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance $ADDITIONAL_ARGS
