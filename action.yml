@@ -116,8 +116,8 @@ runs:
         
         echo "::group::Mounting plugin directories"
 
-        ARGS+=("--mount=./tests/wp-content/mu-plugins:/wordpress/wp-content/mu-plugins")
-        echo "./tests/wp-content/mu-plugins:/wordpress/wp-content/mu-plugins"
+        ARGS+=("--mount=./wp-content/mu-plugins:/wordpress/wp-content/mu-plugins")
+        echo "./wp-content/mu-plugins:/wordpress/wp-content/mu-plugins"
         
         PLUGINS=${PLUGINS%$'\n'}
         THEMES=${THEMES%$'\n'}
