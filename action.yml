@@ -119,31 +119,39 @@ runs:
         ARGS+=("--mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins")
         echo "./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins"
         
+        PLUGINS=${PLUGINS%$'\n'}
+        THEMES=${THEMES%$'\n'}
+        IFS=$'\n';
+        PLUGINS=($PLUGINS)
+        THEMES=($THEMES)
+        
         for i in "${PLUGINS[@]}"; do
           if [ ! -z i ]; then
-          PLUGIN_REALPATH=$(realpath $i);
-          PLUGIN_BASENAME=$(basename $i);
-
-          ARGS+=("--mount=$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
-          echo "$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME"
+            PLUGIN_REALPATH=$(realpath $i);
+            PLUGIN_BASENAME=$(basename $i);
+  
+            ARGS+=("--mount=$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
+            echo "$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME"
           fi
         done
         
         echo "::endgroup::"
         
-        echo "::group::Mounting plugin directories"
+        echo "::group::Mounting theme directories"
         
         for i in "${THEMES[@]}"; do
           if [ ! -z i ]; then
-          THEME_REALPATH=$(realpath $i);
-          THEME_BASENAME=$(basename $i);
-        
-          ARGS+=("--mount=$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME")
-          echo "$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME"
+            THEME_REALPATH=$(realpath $i);
+            THEME_BASENAME=$(basename $i);
+          
+            ARGS+=("--mount=$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME")
+            echo "$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME"
           fi
         done
         
         echo "::endgroup::"
+        
+        unset IFS;
         
         echo "::group::Blueprint"
 
