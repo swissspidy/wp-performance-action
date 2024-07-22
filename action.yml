@@ -39,7 +39,7 @@ inputs:
   php-version:
     required: false
     description: 'PHP version to use.'
-    default: 'auto'
+    default: '8.2'
   shard:
     required: false
     description: 'Shard to use if running tests in parallel in a matrix.'
@@ -110,6 +110,7 @@ runs:
         --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
         --blueprint=./blueprints/setup.json \
         --wp=$WP_VERSION \
+        --php=$PHP_VERSION \
         &
       env:
         WP_VERSION: ${{ inputs.wp-version }}
