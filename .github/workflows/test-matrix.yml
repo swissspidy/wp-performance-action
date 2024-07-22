@@ -1,4 +1,4 @@
-name: 'build-test'
+name: 'Matrix Tests'
 on: # rebuild any PRs and main branch changes
   pull_request:
   push:
@@ -8,6 +8,7 @@ on: # rebuild any PRs and main branch changes
 
 jobs:
   matrix:
+    name: 'Run tests'
     timeout-minutes: 60
     runs-on: ubuntu-latest
     strategy:
@@ -25,10 +26,11 @@ jobs:
           /
           /sample-page/
         plugins: |
-          ./dummy-plugin
+          ./tests/dummy-plugin
         shard: ${{ matrix.shard }}
 
   merge-reports:
+    name: 'Merge reports'
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: [matrix]

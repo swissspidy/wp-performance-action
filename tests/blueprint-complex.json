@@ -1,0 +1,20 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "plugins": [
+    "performant-translations",
+    "akismet"
+  ],
+  "steps": [
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "WP_DEBUG": true
+      }
+    },
+    {
+      "step": "activatePlugin",
+      "pluginName": "Dummy Plugin",
+      "pluginPath": "/wordpress/wp-content/plugins/dummy-plugin"
+    }
+  ]
+}

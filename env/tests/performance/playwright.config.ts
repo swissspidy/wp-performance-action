@@ -44,10 +44,12 @@ const config = defineConfig( {
 	reportSlowTests: null,
 	webServer: {
 		...baseConfig.webServer,
-		command: 'npm run env:start',
+		port: 9400,
+		command: undefined,
 	},
 	use: {
 		...baseConfig.use,
+		baseURL: 'http://127.0.0.1:9400',
 		video: 'off',
 		trace: 'off',
 	},
