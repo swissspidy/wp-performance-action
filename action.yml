@@ -156,7 +156,9 @@ runs:
         echo "::group::Blueprint"
 
         if [ ! -z $BLUEPRINT ]; then
-          jq -f patch.jq --argfile patch $(realpath "${{ github.workspace }}/$BLUEPRINT") ./blueprints/setup.json > ./blueprints/tmp-merged.json
+          BLUEPRINT=$(realpath "${{ github.workspace }}/$BLUEPRINT");
+          echo "Provided blueprint file: $BLUEPRINT"
+          jq -s 'map(to_entries)|flatten|group_by(.key)|map({(.[0].key):map(.value)|add})|add' ./blueprints/setup.json $BLUEPRINT > ./blueprints/tmp-merged.json
           ARGS+=(--blueprint=./blueprints/tmp-merged.json)
           cat ./blueprints/tmp-merged.json | jq '.'
         else

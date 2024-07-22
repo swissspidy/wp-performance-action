@@ -3,5 +3,13 @@
   "plugins": [
     "performant-translations",
     "wordpress-seo"
+  ],
+  "steps": [
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "WP_DEBUG": true
+      }
+    }
   ]
 }
