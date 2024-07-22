@@ -2,7 +2,7 @@
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
   "plugins": [
     "performant-translations",
-    "wordpress-seo"
+    "akismet"
   ],
   "steps": [
     {
