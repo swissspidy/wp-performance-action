@@ -106,7 +106,7 @@ runs:
 
     - name: Set up WordPress Playground
       run: |
-        ./node_modules/@wp-playground/cli/wp-playground.js server -- \
+        ./node_modules/@wp-playground/cli/wp-playground.js server \
         --mount=./tests/wp-env/mu-plugins:/wordpress/wp-content/mu-plugins \
         --blueprint=./blueprints/setup.json \
         --wp=$WP_VERSION \
