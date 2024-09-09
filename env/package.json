@@ -14,12 +14,12 @@
 	"homepage": "https://github.com/swissspidy/wp-performance-action#readme",
 	"dependencies": {
 		"@playwright/test": "^1.47.0",
-		"@wordpress/e2e-test-utils-playwright": "^1.6.0",
-		"@wordpress/env": "^10.6.0",
+		"@wordpress/e2e-test-utils-playwright": "^1.7.0",
+		"@wordpress/env": "^10.7.0",
 		"tablemark": "^3.1.0"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^28.6.0",
+		"@wordpress/scripts": "^29.0.0",
 		"eslint-plugin-playwright": "^1.6.2",
 		"prettier": "npm:wp-prettier@^3.0.3"
 	},
