@@ -13,6 +13,14 @@ inputs:
     description: 'Whether to create PR comments with performance results.'
     required: false
     default: ''
+  print-results:
+    description: 'Whether to add results to the workflow summary'
+    required: false
+    default: ''
+  upload-artifacts:
+    description: 'Whether to upload any artifacts'
+    required: false
+    default: ''
   debug:
     description: 'Whether to log additional debugging information.'
     default: ${{ runner.debug == '1' }}
@@ -262,7 +270,7 @@ runs:
     - name: Share raw results
       id: share-results
       run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
-      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.print-results != 'false' }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
@@ -277,7 +285,7 @@ runs:
 
     - name: Upload performance results
       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+      if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.upload-artifacts != 'false' }}
       with:
         name: performance-results
         path: ${{ env.ABS_ACTION_PATH }}/env/artifacts/performance-results.json
@@ -293,7 +301,7 @@ runs:
 
     - name: Upload blob report
       uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
-      if: ${{ success() && inputs.shard != '' }}
+      if: ${{ success() && inputs.shard != '' && inputs.upload-artifacts != 'false' }}
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.ABS_ACTION_PATH }}/env/blob-report

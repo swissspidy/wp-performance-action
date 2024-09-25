@@ -156,14 +156,14 @@ if ( process.env.GITHUB_SHA ) {
 }
 
 if ( beforeFile ) {
-	summaryMarkdown += `Note: the numbers in parentheses show the difference to the previous (baseline) test run.\n\n`;
+	summaryMarkdown += `Note: the numbers in parentheses show the difference to the previous (baseline) test run. Differences below 2% or 0.5 in absolute values are not shown.\n\n`;
 }
 
 console.log( 'Performance Test Results\n' );
 
 if ( beforeFile ) {
 	console.log(
-		'Note: the numbers in parentheses show the difference to the previous (baseline) test run.\n'
+		'Note: the numbers in parentheses show the difference to the previous (baseline) test run. Differences below 2% or 0.5 in absolute values are not shown.\n'
 	);
 }
 
