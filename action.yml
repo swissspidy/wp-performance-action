@@ -243,7 +243,7 @@ runs:
 
     - name: Add workflow summary
       run: cat $WP_ARTIFACTS_PATH/performance-results.md >> $GITHUB_STEP_SUMMARY
-      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.print-results != 'false' }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
@@ -270,7 +270,7 @@ runs:
     - name: Share raw results
       id: share-results
       run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
-      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.print-results != 'false' }}
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
@@ -291,7 +291,7 @@ runs:
         path: ${{ env.ABS_ACTION_PATH }}/env/artifacts/performance-results.json
 
     - name: Get blob artifact name
-      if: always()
+      if: ${{ success() && inputs.shard != '' && inputs.upload-artifacts != 'false' }}
       run: |
         ARTIFACT_NAME=${ARTIFACT_NAME//\//-}
         echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
