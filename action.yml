@@ -208,7 +208,7 @@ runs:
         merge-multiple: true
 
     - name: Merge into single performance report
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:merge-reports ${{steps.download.outputs.download-path}}
+      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:merge-reports ${{ steps.download.outputs.download-path }}
       if: ${{ inputs.action == 'merge' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
