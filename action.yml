@@ -194,6 +194,8 @@ runs:
         ADDITIONAL_ARGS: ${{ inputs.shard != '' && format('-- --shard={0}', inputs.shard) || '' }}
         URLS_TO_TEST: ${{ inputs.urls }}
         DEBUG: ${{ inputs.debug == 'true' }}
+        TEST_ITERATIONS: ${{ inputs.iterations }}
+        TEST_REPETITIONS: ${{ inputs.repetitions }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
