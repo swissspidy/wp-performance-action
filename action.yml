@@ -237,12 +237,12 @@ runs:
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
 
-    - name: Print results
+    - name: Log results
       run: |
         if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
           npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $RESULTS_FILE $PREVIOUS_RESULTS
         else
-          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results
+          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $RESULTS_FILE
         fi;
       if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
       env:

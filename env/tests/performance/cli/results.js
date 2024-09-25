@@ -11,9 +11,7 @@ process.env.WP_ARTIFACTS_PATH ??= join( process.cwd(), 'artifacts' );
 const args = process.argv.slice( 2 );
 
 const beforeFile = args[ 1 ];
-const afterFile =
-	args[ 0 ] ||
-	join( process.env.WP_ARTIFACTS_PATH, 'performance-results.json' );
+const afterFile = args[ 0 ];
 
 if ( ! existsSync( afterFile ) ) {
 	console.error( `File not found: ${ afterFile }` );
