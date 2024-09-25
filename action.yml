@@ -226,16 +226,27 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
+    - name: Rename results file
+      id: prepare-results
+      run: |
+        UUID=$(uuidgen)
+        mv $WP_ARTIFACTS_PATH/performance-results.json $TMPDIR/performance-results-$UUID.json
+        echo "results=$TMPDIR/performance-results-$UUID.json" >> $GITHUB_OUTPUT
+      if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) }}
+      env:
+        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
+      shell: 'bash'
+
     - name: Print results
       run: |
         if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
-          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $WP_ARTIFACTS_PATH/performance-results.json $PREVIOUS_RESULTS
+          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $RESULTS_FILE $PREVIOUS_RESULTS
         else
           npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results
         fi;
       if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
+        RESULTS_FILE: ${{ steps.prepare-results.outputs.results }}
         PREVIOUS_RESULTS: ${{ inputs.previous-results }}
         REPOSITORY_URL: ${{ github.server_url }}/${{ github.repository }}
       shell: 'bash'
@@ -269,10 +280,10 @@ runs:
 
     - name: Share raw results
       id: share-results
-      run: echo "results=$WP_ARTIFACTS_PATH/performance-results.json" >> $GITHUB_OUTPUT
+      run: echo "results=$RESULTS_FILE" >> $GITHUB_OUTPUT
       if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard }}
       env:
-        WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
+        RESULTS_FILE: ${{ steps.prepare-results.outputs.results }}
       shell: 'bash'
 
     - name: Share blob report
@@ -288,7 +299,7 @@ runs:
       if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.upload-artifacts != 'false' }}
       with:
         name: performance-results
-        path: ${{ env.ABS_ACTION_PATH }}/env/artifacts/performance-results.json
+        path: ${{ steps.share-results.outputs.results }}
 
     - name: Get blob artifact name
       if: ${{ success() && inputs.shard != '' && inputs.upload-artifacts != 'false' }}
