@@ -34,6 +34,16 @@ See [action.yml](action.yml)
     # Default: false
     create-comment: ''
 
+    # Whether to add results to the workflow summary.
+    #
+    # Default: true
+    print-results: ''
+
+    # Whether to upload any artifacts.
+    #
+    # Default: true
+    upload-artifacts: ''
+
     # Whether to log additional debugging information
     #
     # Default: ${{ runner.debug == '1' }}
