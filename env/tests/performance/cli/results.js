@@ -11,9 +11,7 @@ process.env.WP_ARTIFACTS_PATH ??= join( process.cwd(), 'artifacts' );
 const args = process.argv.slice( 2 );
 
 const beforeFile = args[ 1 ];
-const afterFile =
-	args[ 0 ] ||
-	join( process.env.WP_ARTIFACTS_PATH, 'performance-results.json' );
+const afterFile = args[ 0 ];
 
 if ( ! existsSync( afterFile ) ) {
 	console.error( `File not found: ${ afterFile }` );
@@ -156,14 +154,14 @@ if ( process.env.GITHUB_SHA ) {
 }
 
 if ( beforeFile ) {
-	summaryMarkdown += `Note: the numbers in parentheses show the difference to the previous (baseline) test run.\n\n`;
+	summaryMarkdown += `Note: the numbers in parentheses show the difference to the previous (baseline) test run. Differences below 2% or 0.5 in absolute values are not shown.\n\n`;
 }
 
 console.log( 'Performance Test Results\n' );
 
 if ( beforeFile ) {
 	console.log(
-		'Note: the numbers in parentheses show the difference to the previous (baseline) test run.\n'
+		'Note: the numbers in parentheses show the difference to the previous (baseline) test run. Differences below 2% or 0.5 in absolute values are not shown.\n'
 	);
 }
 
@@ -182,6 +180,10 @@ const PERCENTAGE_VARIANCE = 2;
  * @return {string} Formatted value.
  */
 function formatValue( value, key ) {
+	if ( key === '%' ) {
+		return `${ value.toFixed( 0 ) }%`;
+	}
+
 	if ( key === 'CLS' ) {
 		return value.toFixed( 2 );
 	}
@@ -250,7 +252,7 @@ for ( const { file, title, results } of afterStats ) {
 			) } (${ prefix }${ formatValue(
 				delta,
 				key
-			) } / ${ prefix }${ percentage }%)`;
+			) } / ${ prefix }${ formatValue( percentage, '%' ) } )`;
 		}
 
 		diffResults.push( diffResult );

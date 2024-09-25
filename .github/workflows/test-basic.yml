@@ -1,4 +1,4 @@
-name: 'build-test'
+name: 'Basic Tests'
 on: # rebuild any PRs and main branch changes
   pull_request:
   push:
@@ -8,6 +8,7 @@ on: # rebuild any PRs and main branch changes
 
 jobs:
   basic:
+    name: 'Run tests'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

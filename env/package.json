@@ -14,8 +14,9 @@
 	"homepage": "https://github.com/swissspidy/wp-performance-action#readme",
 	"dependencies": {
 		"@playwright/test": "^1.47.2",
-		"@wordpress/e2e-test-utils-playwright": "^1.8.0",
-		"@wordpress/env": "^10.8.0",
+		"@wordpress/e2e-test-utils-playwright": "^1.8.1",
+		"@wp-playground/cli": "^0.9.42",
+		"kill-port": "^2.0.1",
 		"tablemark": "^3.1.0"
 	},
 	"devDependencies": {
@@ -29,6 +30,7 @@
 		"test:performance": "wp-scripts test-playwright --config tests/performance/playwright.config.ts",
 		"test:performance:merge-reports": "playwright merge-reports --reporter tests/performance/config/performance-reporter.ts",
 		"test:performance:results": "node tests/performance/cli/results.js",
-		"wp-env": "wp-env"
+		"playground": "./node_modules/@wp-playground/cli/wp-playground.js",
+		"stop-server": "kill-port 9400"
 	}
 }
