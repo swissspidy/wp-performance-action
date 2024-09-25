@@ -180,6 +180,10 @@ const PERCENTAGE_VARIANCE = 2;
  * @return {string} Formatted value.
  */
 function formatValue( value, key ) {
+	if ( key === '%' ) {
+		return value.toFixed( 0 );
+	}
+
 	if ( key === 'CLS' ) {
 		return value.toFixed( 2 );
 	}
@@ -248,7 +252,7 @@ for ( const { file, title, results } of afterStats ) {
 			) } (${ prefix }${ formatValue(
 				delta,
 				key
-			) } / ${ prefix }${ percentage }%)`;
+			) } / ${ prefix }${ formatValue( percentage, '%' ) }`;
 		}
 
 		diffResults.push( diffResult );
