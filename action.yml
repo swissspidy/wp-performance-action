@@ -230,10 +230,11 @@ runs:
       id: prepare-results
       run: |
         UUID=$(uuidgen)
-        mv $WP_ARTIFACTS_PATH/performance-results.json $TMPDIR/performance-results-$UUID.json
-        echo "results=$TMPDIR/performance-results-$UUID.json" >> $GITHUB_OUTPUT
+        mv $WP_ARTIFACTS_PATH/performance-results.json $TEMP/performance-results-$UUID.json
+        echo "results=$TEMP/performance-results-$UUID.json" >> $GITHUB_OUTPUT
       if: ${{ ( inputs.action == 'test' || inputs.action == 'merge' ) }}
       env:
+        TEMP: ${{ runner.temp }}
         WP_ARTIFACTS_PATH: ${{ github.action_path }}/env/artifacts
       shell: 'bash'
 
