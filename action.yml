@@ -199,6 +199,11 @@ runs:
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
 
+    - name: Stop server
+      run: npm run stop-server
+      shell: 'bash'
+      working-directory: ${{ github.action_path }}/env
+
     - name: Download blob reports from GitHub Actions Artifacts
       uses: actions/download-artifact@v4
       if: ${{ inputs.action == 'merge' }}
