@@ -4,7 +4,11 @@ A GitHub action to measure performance metrics of WordPress sites.
 
 Results are posted as comments to pull requests and as [GitHub Action job summaries](https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/).
 
-It collects data from the `Server-Timing` header and runs Lighthouse on a given set of URLs. 
+It collects data from the `Server-Timing` header and runs Lighthouse on a given set of URLs.
+
+**Note:** Tests are run using [WordPress Playground](https://wordpress.org/playground/), which means you can use [blueprints](https://wordpress.github.io/wordpress-playground/blueprints) to prepare the test environment suitable to your needs.
+
+## Example
 
 <img width="1154" alt="Screenshot of a GitHub Action job summary output by this action" src="https://github.com/swissspidy/wp-performance-action/assets/841956/bb543ba2-a142-49d5-bb45-77d11f121824">
 
@@ -57,11 +61,15 @@ See [action.yml](action.yml)
     # Default: ''
     themes: ''
 
-    # Theme to activate on the site.
-    # Theme needs to be already installed.
+    # Blueprint to use for setting up the environment.
     #
-    # Default: 'twentytwentyone'
-    active-theme: ''
+    # Use this to install or activate additional plugins, defining constants,
+    # and much more.
+    #
+    # See https://wordpress.github.io/wordpress-playground/blueprints for more information.
+    #
+    # Default: ''
+    blueprint: ''
 
     # WordPress version to use.
     # Supports aliases such as latest, nightly, or trunk.
@@ -148,6 +156,7 @@ steps:
         ./my-awesome-plugin
         https://downloads.wordpress.org/plugin/performant-translations.zip
         https://downloads.wordpress.org/plugin/wordpress-seo.zip
+      blueprint: ./my-custom-blueprint.json
       iterations: 5
       repetitions: 1
 ```
