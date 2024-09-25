@@ -18,7 +18,7 @@ See [action.yml](action.yml)
 
 <!-- start usage -->
 ```yaml
-- uses: swissspidy/wp-performance-action@v1
+- uses: swissspidy/wp-performance-action@v2
   with:
     # Personal access token (PAT) used to comment on pull requests.
     #
@@ -145,7 +145,7 @@ steps:
     uses: actions/checkout@v4
   
   - name: Run performance tests
-    uses: swissspidy/wp-performance-action@v1
+    uses: swissspidy/wp-performance-action@v2
     with:
       plugins: |
         ./my-awesome-plugin
@@ -164,7 +164,7 @@ steps:
     uses: actions/checkout@v4
   
   - name: Run performance tests
-    uses: swissspidy/wp-performance-action@v1
+    uses: swissspidy/wp-performance-action@v2
     with:
       urls: |
         /
@@ -217,7 +217,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run performance tests
-      uses: swissspidy/wp-performance-action@v1
+      uses: swissspidy/wp-performance-action@v2
       id: run-tests
       with:
         urls: |
@@ -235,7 +235,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Merge performance test results
-      uses: swissspidy/wp-performance-action@v1
+      uses: swissspidy/wp-performance-action@v2
       with:
         action: 'merge'
 ```
@@ -253,7 +253,7 @@ steps:
     uses: actions/checkout@v4
   
   - name: Run performance tests
-    uses: swissspidy/wp-performance-action@v1
+    uses: swissspidy/wp-performance-action@v2
     id: performance-tests
     with:
       plugins: |
