@@ -28,6 +28,7 @@ See [action.yml](action.yml)
     github-token: ''
 
     # Whether to create PR comments with performance results.
+    #
     # Might require a custom `github-token` to be set.
     #
     # Default: false
@@ -39,24 +40,28 @@ See [action.yml](action.yml)
     debug: ''
 
     # List of URLs on the WordPress site to test.
+    #
     # Each URL should be separated with new lines.
     #
     # Default: ''
     urls: ''
 
-    # List of plugins to install.
+    # List of plugin directories to mount.
+    #
     # Each plugin should be separated with new lines.
-    # Supports paths to local directories or ZIP URLs.
-    # Performance Lab (performance-lab) is always installed.
+    # Needs to be a path to a local directory.
+    # For installing plugins from the plugin directory
+    # or a ZIP file, use a blueprint.
     #
     # Default: ''
     plugins: ''
 
-    # List of themes to install.
+    # List of theme directories to mount.
+    #
     # Each theme should be separated with new lines.
-    # Supports paths to local directories or ZIP URLs.
-    # Twenty Twenty-One (twentytwentyone) and Twenty Twenty-Three (twentytwentythree)
-    # are always installed.
+    # Needs to be a path to a local directory.
+    # For installing themes from the theme directory
+    # or a ZIP file, use a blueprint.
     #
     # Default: ''
     themes: ''
@@ -72,19 +77,19 @@ See [action.yml](action.yml)
     blueprint: ''
 
     # WordPress version to use.
-    # Supports aliases such as latest, nightly, or trunk.
-    # Also supports ZIP URLs or a Git reference from https://github.com/WordPress/wordpress
-    # to install a specific version.
+    #
+    # Loads the specified WordPress version.
+    # Accepts the last four major WordPress versions.
+    # You can also use the generic values 'latest', 'nightly', or 'beta'.
     #
     # Default: 'latest'
     wp-version: ''
 
     # PHP version to use.
-    # Defaults to whatever version is the default
-    # in the Docker-maintained WordPress image
-    # (currently 8.0 as of November 2023)
     #
-    # Default: 'auto'
+    # Accepts 7.0, 7.1, 7.2, 7.3, 7.4, 8.0, 8.1, 8.2, 8.3.
+    #
+    # Default: 'latest'
     php-version: ''
  
     # Number of times the tests should be repeated.
@@ -141,6 +146,8 @@ steps:
 
 ### Advanced
 
+Add a workflow (`.github/workflows/build-test.yml`):
+
 ```yaml
 steps:
   - name: Checkout
@@ -154,11 +161,35 @@ steps:
         /sample-page/
       plugins: |
         ./my-awesome-plugin
-        https://downloads.wordpress.org/plugin/performant-translations.zip
-        https://downloads.wordpress.org/plugin/wordpress-seo.zip
       blueprint: ./my-custom-blueprint.json
       iterations: 5
       repetitions: 1
+```
+
+Add a blueprint (`my-custom-blueprint.json`):
+
+```json
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "plugins": [
+    "performant-translations",
+    "akismet"
+  ],
+  "steps": [
+    {
+      "step": "defineWpConfigConsts",
+      "consts": {
+        "WP_DEBUG": true
+      }
+    },
+    {
+      "step": "activatePlugin",
+      "pluginName": "My Awesome Plugin",
+      "pluginPath": "/wordpress/wp-content/plugins/my-awesome-plugin"
+    }
+  ]
+}
+
 ```
 
 ### Running tests in parallel (sharding)

@@ -22,3 +22,4 @@ jobs:
           /sample-page/
         create-comment: true
         github-token: ${{ secrets.PR_COMMENT_TOKEN }}
+        repetitions: 5
