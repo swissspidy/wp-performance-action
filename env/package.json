@@ -15,7 +15,7 @@
 	"dependencies": {
 		"@playwright/test": "^1.47.2",
 		"@wordpress/e2e-test-utils-playwright": "^1.9.0",
-		"@wp-playground/cli": "^0.9.45",
+		"@wp-playground/cli": "^0.9.46",
 		"kill-port": "^2.0.1",
 		"tablemark": "^3.1.0"
 	},
