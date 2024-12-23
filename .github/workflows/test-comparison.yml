@@ -65,7 +65,7 @@ jobs:
         blueprint: './tests/blueprint-complex.json'
         iterations: 5
         repetitions: 1
-        wp-version: '6.5'
+        wp-version: '6.7'
         print-results: false
         upload-artifacts: false
 
