@@ -180,6 +180,7 @@ runs:
         ARGS+=(--php=$PHP_VERSION)
 
         echo "::group::Start Playground server"
+        printf "Providing arguments: %s," "${ARGS[@]}"
         ./node_modules/@wp-playground/cli/wp-playground.js server "${ARGS[@]}" &
         echo "::endgroup::"
       env:
