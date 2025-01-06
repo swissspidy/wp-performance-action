@@ -30,10 +30,11 @@
     },
     {
       "step": "installTheme",
-      "themeZipFile": {
+      "themeData": {
         "resource": "wordpress.org/themes",
         "slug": "twentytwentyone"
       },
+      "ifAlreadyInstalled": "skip",
       "options": {
         "activate": true,
         "importStarterContent": false
@@ -41,10 +42,11 @@
     },
     {
       "step": "installTheme",
-      "themeZipFile": {
+      "themeData": {
         "resource": "wordpress.org/themes",
         "slug": "twentytwentythree"
       },
+      "ifAlreadyInstalled": "skip",
       "options": {
         "activate": false,
         "importStarterContent": false
