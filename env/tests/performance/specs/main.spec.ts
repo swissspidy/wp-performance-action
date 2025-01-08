@@ -43,6 +43,8 @@ test.describe( 'Tests', () => {
 
 				const serverTiming = await metrics.getServerTiming();
 
+				results[url] ??= {};
+
 				for ( const [ key, value ] of Object.entries( serverTiming ) ) {
 					results[url][ camelCaseDashes( key ) ] ??= [];
 					results[url][ camelCaseDashes( key ) ].push( value );
