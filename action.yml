@@ -179,14 +179,12 @@ runs:
         ARGS+=(--wp=$WP_VERSION)
         ARGS+=(--php=$PHP_VERSION)
 
-        echo "::group::Start Playground server"
-
         IFS=,
         echo "Providing arguments: ${ARGS[*]}"
         unset IFS;
 
+        echo "Start Playground server..."
         ./node_modules/@wp-playground/cli/wp-playground.js server "${ARGS[@]}" &
-        echo "::endgroup::"
       env:
         PLUGINS: ${{ inputs.plugins }}
         THEMES: ${{ inputs.themes }}
