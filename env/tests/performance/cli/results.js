@@ -222,7 +222,7 @@ for ( const [ url, results ] of Object.entries( afterStats ) ) {
 		for ( const [ key, values ] of Object.entries( newResult ) ) {
 			// Only do comparison if the number of results is the same.
 			const prevValues =
-				prevStat.length === results.length
+				prevStat && prevStat.length === results.length
 					? prevStat[ i ][ key ]
 					: null;
 
