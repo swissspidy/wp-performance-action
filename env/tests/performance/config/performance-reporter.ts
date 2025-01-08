@@ -36,14 +36,14 @@ class PerformanceReporter implements Reporter {
 		);
 
 		if ( performanceResults?.body ) {
-			const resultsByUrl = JSON.parse( performanceResults.body.toString( 'utf-8' ) ) as Record< string, Record< string, number[] > >;
+			const resultsByUrl = JSON.parse(
+				performanceResults.body.toString( 'utf-8' )
+			) as Record< string, Record< string, number[] > >;
 
-			for ( const [url, results ] of Object.entries(resultsByUrl)) {
+			for ( const [ url, results ] of Object.entries( resultsByUrl ) ) {
 				this.allResults[ url ] ??= [];
 
-				this.allResults[ url ].push(
-					results
-				);
+				this.allResults[ url ].push( results );
 			}
 		}
 	}
@@ -68,9 +68,7 @@ class PerformanceReporter implements Reporter {
 			console.log( `Status: ${ result.status }` );
 		}
 
-		for ( const [ url, results ] of Object.entries(
-			this.allResults
-		) ) {
+		for ( const [ url, results ] of Object.entries( this.allResults ) ) {
 			console.log( `\nURL: \`${ url }\`\n` );
 			console.table(
 				results.map( ( r ) =>
