@@ -104,7 +104,7 @@ runs:
     - name: Install dependencies
       run: |
         echo "::group::Install dependencies"
-        npm ci ${{ inputs.debug != 'true' && '--silent' }}
+        npm ci ${{ inputs.debug != 'true' && '--silent' || '' }}
         echo "::endgroup::"
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
@@ -112,7 +112,7 @@ runs:
     - name: Install Playwright browsers
       run: |
         echo "::group::Install Playwright browsers"
-        npx ${{ inputs.debug != 'true' && '--silent' }} playwright install --with-deps
+        npx ${{ inputs.debug != 'true' && '--silent' || '' }} playwright install --with-deps
         echo "::endgroup::"
       if: ${{ inputs.action == 'test' }}
       shell: 'bash'
@@ -195,7 +195,7 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Run tests
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance $ADDITIONAL_ARGS
+      run: npm run ${{ inputs.debug != 'true' && '--silent' || '' }} test:performance $ADDITIONAL_ARGS
       if: ${{ inputs.action == 'test' }}
       env:
         WP_BASE_URL: 'http://127.0.0.1:9400'
@@ -224,7 +224,7 @@ runs:
         merge-multiple: true
 
     - name: Merge into single performance report
-      run: npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:merge-reports ${{ steps.download.outputs.download-path }}
+      run: npm run ${{ inputs.debug != 'true' && '--silent' || '' }} test:performance:merge-reports ${{ steps.download.outputs.download-path }}
       if: ${{ inputs.action == 'merge' }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
@@ -243,9 +243,9 @@ runs:
     - name: Log results
       run: |
         if [ ! -z $PREVIOUS_RESULTS ] && [ -f $PREVIOUS_RESULTS ]; then
-          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $RESULTS_FILE $PREVIOUS_RESULTS
+          npm run ${{ inputs.debug != 'true' && '--silent' || '' }} test:performance:results $RESULTS_FILE $PREVIOUS_RESULTS
         else
-          npm run ${{ inputs.debug != 'true' && '--silent' }} test:performance:results $RESULTS_FILE
+          npm run ${{ inputs.debug != 'true' && '--silent' || '' }} test:performance:results $RESULTS_FILE
         fi;
       if: ${{ inputs.action == 'test' || inputs.action == 'merge' }}
       env:
