@@ -90,6 +90,8 @@ function formatAsMarkdownTable( rows ) {
 /**
  * Computes the median number from an array numbers.
  *
+ * @todo Import this from utils/index.ts once this file is converted to TS.
+ *
  * @param {number[]} array List of numbers.
  * @return {number} Median.
  */
@@ -105,12 +107,12 @@ function median( array ) {
 }
 
 /**
- * @type {Array<{file: string, title: string, results: Record<string,number[]>[]}>}
+ * @type {Array<{url: string, results: Record<string,number[]>[]}>}
  */
 let beforeStats = [];
 
 /**
- * @type {Array<{file: string, title: string, results: Record<string,number[]>[]}>}
+ * @type {Array<{url, results: Record<string,number[]>[]}>}
  */
 let afterStats;
 
@@ -199,8 +201,8 @@ function formatValue( value, key ) {
 	return `${ value.toFixed( 2 ) } ms`;
 }
 
-for ( const { file, title, results } of afterStats ) {
-	const prevStat = beforeStats.find( ( s ) => s.file === file );
+for ( const { url, results } of afterStats ) {
+	const prevStat = beforeStats.find( ( s ) => s.url === url );
 
 	/**
 	 * @type {Array<Record<string,string|number|boolean>>}
@@ -258,10 +260,10 @@ for ( const { file, title, results } of afterStats ) {
 		diffResults.push( diffResult );
 	}
 
-	console.log( title );
+	console.log( `URL: \`${ url }\`` );
 	console.table( diffResults );
 
-	summaryMarkdown += `**${ title }**\n\n`;
+	summaryMarkdown += `**URL: \`${ url }\`**\n\n`;
 	summaryMarkdown += `${ formatAsMarkdownTable( diffResults ) }\n`;
 }
 

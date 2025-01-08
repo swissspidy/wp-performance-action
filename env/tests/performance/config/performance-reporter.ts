@@ -17,7 +17,6 @@ class PerformanceReporter implements Reporter {
 	allResults: Record<
 		string,
 		{
-			title: string;
 			results: Record< string, number[] >[];
 		}
 	> = {};
@@ -42,14 +41,17 @@ class PerformanceReporter implements Reporter {
 		);
 
 		if ( performanceResults?.body ) {
-			this.allResults[ test.location.file ] ??= {
-				// 0 = empty, 1 = browser, 2 = file name, 3 = test suite name.
-				title: test.titlePath()[ 3 ],
-				results: [],
-			};
-			this.allResults[ test.location.file ].results.push(
-				JSON.parse( performanceResults.body.toString( 'utf-8' ) )
-			);
+			const resultsByUrl = JSON.parse( performanceResults.body.toString( 'utf-8' ) ) as Record< string, Record< string, number[] > >;
+
+			for ( const [url, results ] of Object.entries(resultsByUrl)) {
+				this.allResults[ url ] ??= {
+					results: [],
+				};
+
+				this.allResults[ url ].results.push(
+					results
+				);
+			}
 		}
 	}
 
@@ -75,10 +77,10 @@ class PerformanceReporter implements Reporter {
 			console.log( `Status: ${ result.status }` );
 		}
 
-		for ( const [ file, { title, results } ] of Object.entries(
+		for ( const [ url, { results } ] of Object.entries(
 			this.allResults
 		) ) {
-			console.log( `\n${ title }\n` );
+			console.log( `\nURL: \`${ url }\`\n` );
 			console.table(
 				results.map( ( r ) =>
 					Object.fromEntries(
@@ -91,8 +93,7 @@ class PerformanceReporter implements Reporter {
 			);
 
 			summary.push( {
-				file,
-				title,
+				url,
 				results,
 			} );
 		}
