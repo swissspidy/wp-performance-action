@@ -201,6 +201,41 @@ function formatValue( value, key ) {
 	return `${ value.toFixed( 2 ) } ms`;
 }
 
+/**
+ * Format key for readability.
+ *
+ * @param {string} key Key.
+ * @return {string} Formatted key.
+ */
+function formatKey( key ) {
+	switch ( key ) {
+		// Server-Timing.
+
+		case 'wpDbQueries':
+			return '# DB Queries';
+		case 'wpMemoryUsage':
+			return 'Memory';
+		case 'wpBeforeTemplate':
+			return 'Before Template';
+		case 'wpTemplate':
+			return 'Template';
+		case 'wpTotal':
+			return 'WP Total';
+
+		// Web vitals.
+
+		case 'timeToFirstByte':
+			return 'TTFB';
+		case 'lcpMinusTtfb':
+			return 'LCP - TTFB';
+		case 'largestContentfulPaint':
+			return 'LCP';
+
+		default:
+			return key;
+	}
+}
+
 for ( const [ url, results ] of Object.entries( afterStats ) ) {
 	const prevStat = beforeStats[ url ];
 
@@ -239,7 +274,7 @@ for ( const [ url, results ] of Object.entries( afterStats ) ) {
 				! delta ||
 				Math.abs( delta ) <= DELTA_VARIANCE
 			) {
-				diffResult[ key ] = formatValue(
+				diffResult[ formatKey( key ) ] = formatValue(
 					/** @type {number} */ ( value ),
 					key
 				);
@@ -248,7 +283,7 @@ for ( const [ url, results ] of Object.entries( afterStats ) ) {
 
 			const prefix = delta > 0 ? '+' : '';
 
-			diffResult[ key ] = `${ formatValue(
+			diffResult[ formatKey( key ) ] = `${ formatValue(
 				value,
 				key
 			) } (${ prefix }${ formatValue(
