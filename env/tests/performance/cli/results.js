@@ -107,12 +107,12 @@ function median( array ) {
 }
 
 /**
- * @type {Array<{url: string, results: Record<string,number[]>[]}>}
+ * @type {Record< string, Array< Record< string, number[] > > >}
  */
-let beforeStats = [];
+let beforeStats = {};
 
 /**
- * @type {Array<{url, results: Record<string,number[]>[]}>}
+ * @type {Record< string, Array< Record< string, number[] > > >}
  */
 let afterStats;
 
@@ -201,11 +201,11 @@ function formatValue( value, key ) {
 	return `${ value.toFixed( 2 ) } ms`;
 }
 
-for ( const { url, results } of afterStats ) {
-	const prevStat = beforeStats.find( ( s ) => s.url === url );
+for ( const [ url, results ] of Object.entries( afterStats ) ) {
+	const prevStat = beforeStats[ url ];
 
 	/**
-	 * @type {Array<Record<string,string|number|boolean>>}
+	 * @type {Array< Record< string, string | number | boolean > >}
 	 */
 	const diffResults = [];
 
@@ -222,8 +222,8 @@ for ( const { url, results } of afterStats ) {
 		for ( const [ key, values ] of Object.entries( newResult ) ) {
 			// Only do comparison if the number of results is the same.
 			const prevValues =
-				prevStat?.results.length === results.length
-					? prevStat?.results[ i ][ key ]
+				prevStat.length === results.length
+					? prevStat[ i ][ key ]
 					: null;
 
 			const value = median( values );
