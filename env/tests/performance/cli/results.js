@@ -212,7 +212,7 @@ function formatKey( key ) {
 		// Server-Timing.
 
 		case 'wpDbQueries':
-			return '# DB Queries';
+			return 'DB Queries';
 		case 'wpMemoryUsage':
 			return 'Memory';
 		case 'wpBeforeTemplate':
