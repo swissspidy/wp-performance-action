@@ -14,13 +14,7 @@ process.env.WP_ARTIFACTS_PATH ??= join( process.cwd(), 'artifacts' );
 class PerformanceReporter implements Reporter {
 	private shard?: FullConfig[ 'shard' ];
 
-	allResults: Record<
-		string,
-		{
-			title: string;
-			results: Record< string, number[] >[];
-		}
-	> = {};
+	allResults: Record< string, Array< Record< string, number[] > > > = {};
 
 	onBegin( config: FullConfig ) {
 		if ( config.shard ) {
@@ -42,14 +36,15 @@ class PerformanceReporter implements Reporter {
 		);
 
 		if ( performanceResults?.body ) {
-			this.allResults[ test.location.file ] ??= {
-				// 0 = empty, 1 = browser, 2 = file name, 3 = test suite name.
-				title: test.titlePath()[ 3 ],
-				results: [],
-			};
-			this.allResults[ test.location.file ].results.push(
-				JSON.parse( performanceResults.body.toString( 'utf-8' ) )
-			);
+			const resultsByUrl = JSON.parse( performanceResults.body.toString( 'utf-8' ) ) as Record< string, Record< string, number[] > >;
+
+			for ( const [url, results ] of Object.entries(resultsByUrl)) {
+				this.allResults[ url ] ??= [];
+
+				this.allResults[ url ].push(
+					results
+				);
+			}
 		}
 	}
 
@@ -62,8 +57,6 @@ class PerformanceReporter implements Reporter {
 	 * @param result
 	 */
 	onEnd( result: FullResult ) {
-		const summary = [];
-
 		if ( Object.keys( this.allResults ).length > 0 ) {
 			if ( this.shard ) {
 				console.log(
@@ -75,10 +68,10 @@ class PerformanceReporter implements Reporter {
 			console.log( `Status: ${ result.status }` );
 		}
 
-		for ( const [ file, { title, results } ] of Object.entries(
+		for ( const [ url, results ] of Object.entries(
 			this.allResults
 		) ) {
-			console.log( `\n${ title }\n` );
+			console.log( `\nURL: \`${ url }\`\n` );
 			console.table(
 				results.map( ( r ) =>
 					Object.fromEntries(
@@ -89,12 +82,6 @@ class PerformanceReporter implements Reporter {
 					)
 				)
 			);
-
-			summary.push( {
-				file,
-				title,
-				results,
-			} );
 		}
 
 		if ( ! existsSync( process.env.WP_ARTIFACTS_PATH as string ) ) {
@@ -106,7 +93,7 @@ class PerformanceReporter implements Reporter {
 				process.env.WP_ARTIFACTS_PATH as string,
 				'performance-results.json'
 			),
-			JSON.stringify( summary, null, 2 )
+			JSON.stringify( this.allResults, null, 2 )
 		);
 	}
 }

@@ -90,6 +90,8 @@ function formatAsMarkdownTable( rows ) {
 /**
  * Computes the median number from an array numbers.
  *
+ * @todo Import this from utils/index.ts once this file is converted to TS.
+ *
  * @param {number[]} array List of numbers.
  * @return {number} Median.
  */
@@ -105,12 +107,12 @@ function median( array ) {
 }
 
 /**
- * @type {Array<{file: string, title: string, results: Record<string,number[]>[]}>}
+ * @type {Record< string, Array< Record< string, number[] > > >}
  */
-let beforeStats = [];
+let beforeStats = {};
 
 /**
- * @type {Array<{file: string, title: string, results: Record<string,number[]>[]}>}
+ * @type {Record< string, Array< Record< string, number[] > > >}
  */
 let afterStats;
 
@@ -199,11 +201,11 @@ function formatValue( value, key ) {
 	return `${ value.toFixed( 2 ) } ms`;
 }
 
-for ( const { file, title, results } of afterStats ) {
-	const prevStat = beforeStats.find( ( s ) => s.file === file );
+for ( const [ url, results ] of Object.entries( afterStats ) ) {
+	const prevStat = beforeStats[ url ];
 
 	/**
-	 * @type {Array<Record<string,string|number|boolean>>}
+	 * @type {Array< Record< string, string | number | boolean > >}
 	 */
 	const diffResults = [];
 
@@ -220,8 +222,8 @@ for ( const { file, title, results } of afterStats ) {
 		for ( const [ key, values ] of Object.entries( newResult ) ) {
 			// Only do comparison if the number of results is the same.
 			const prevValues =
-				prevStat?.results.length === results.length
-					? prevStat?.results[ i ][ key ]
+				prevStat && prevStat.length === results.length
+					? prevStat[ i ][ key ]
 					: null;
 
 			const value = median( values );
@@ -258,10 +260,10 @@ for ( const { file, title, results } of afterStats ) {
 		diffResults.push( diffResult );
 	}
 
-	console.log( title );
+	console.log( `URL: \`${ url }\`` );
 	console.table( diffResults );
 
-	summaryMarkdown += `**${ title }**\n\n`;
+	summaryMarkdown += `**URL: \`${ url }\`**\n\n`;
 	summaryMarkdown += `${ formatAsMarkdownTable( diffResults ) }\n`;
 }
 

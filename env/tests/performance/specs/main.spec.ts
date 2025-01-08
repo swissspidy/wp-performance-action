@@ -1,7 +1,7 @@
 import { test } from '@wordpress/e2e-test-utils-playwright';
 import { camelCaseDashes } from '../utils';
 
-const results: Record< string, number[] > = {};
+const results: Record< string, Record< string, number[] > > = {};
 
 test.describe( 'Tests', () => {
 	test.use( {
@@ -43,20 +43,22 @@ test.describe( 'Tests', () => {
 
 				const serverTiming = await metrics.getServerTiming();
 
+				results[url] ??= {};
+
 				for ( const [ key, value ] of Object.entries( serverTiming ) ) {
-					results[ camelCaseDashes( key ) ] ??= [];
-					results[ camelCaseDashes( key ) ].push( value );
+					results[url][ camelCaseDashes( key ) ] ??= [];
+					results[url][ camelCaseDashes( key ) ].push( value );
 				}
 
 				const ttfb = await metrics.getTimeToFirstByte();
 				const lcp = await metrics.getLargestContentfulPaint();
 
-				results.largestContentfulPaint ??= [];
-				results.largestContentfulPaint.push( lcp );
-				results.timeToFirstByte ??= [];
-				results.timeToFirstByte.push( ttfb );
-				results.lcpMinusTtfb ??= [];
-				results.lcpMinusTtfb.push( lcp - ttfb );
+				results[url].largestContentfulPaint ??= [];
+				results[url].largestContentfulPaint.push( lcp );
+				results[url].timeToFirstByte ??= [];
+				results[url].timeToFirstByte.push( ttfb );
+				results[url].lcpMinusTtfb ??= [];
+				results[url].lcpMinusTtfb.push( lcp - ttfb );
 			} );
 		}
 	}
