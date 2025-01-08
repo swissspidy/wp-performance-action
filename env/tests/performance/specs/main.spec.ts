@@ -43,22 +43,22 @@ test.describe( 'Tests', () => {
 
 				const serverTiming = await metrics.getServerTiming();
 
-				results[url] ??= {};
+				results[ url ] ??= {};
 
 				for ( const [ key, value ] of Object.entries( serverTiming ) ) {
-					results[url][ camelCaseDashes( key ) ] ??= [];
-					results[url][ camelCaseDashes( key ) ].push( value );
+					results[ url ][ camelCaseDashes( key ) ] ??= [];
+					results[ url ][ camelCaseDashes( key ) ].push( value );
 				}
 
 				const ttfb = await metrics.getTimeToFirstByte();
 				const lcp = await metrics.getLargestContentfulPaint();
 
-				results[url].largestContentfulPaint ??= [];
-				results[url].largestContentfulPaint.push( lcp );
-				results[url].timeToFirstByte ??= [];
-				results[url].timeToFirstByte.push( ttfb );
-				results[url].lcpMinusTtfb ??= [];
-				results[url].lcpMinusTtfb.push( lcp - ttfb );
+				results[ url ].largestContentfulPaint ??= [];
+				results[ url ].largestContentfulPaint.push( lcp );
+				results[ url ].timeToFirstByte ??= [];
+				results[ url ].timeToFirstByte.push( ttfb );
+				results[ url ].lcpMinusTtfb ??= [];
+				results[ url ].lcpMinusTtfb.push( lcp - ttfb );
 			} );
 		}
 	}
