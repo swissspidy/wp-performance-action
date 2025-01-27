@@ -21,7 +21,7 @@
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^30.9.0",
-		"eslint-plugin-playwright": "^2.1.0",
+		"eslint-plugin-playwright": "^2.2.0",
 		"prettier": "npm:wp-prettier@^3.0.3"
 	},
 	"scripts": {
