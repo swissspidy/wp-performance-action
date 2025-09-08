@@ -95,7 +95,7 @@ runs:
       shell: 'bash'
 
     - name: Setup Node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v5
       with:
         node-version-file: ${{ env.REL_ACTION_PATH }}/env/.nvmrc
         # Disable caching as it is not supported outside $GITHUB_WORKSPACE
