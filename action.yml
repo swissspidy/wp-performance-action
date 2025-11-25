@@ -198,7 +198,6 @@ runs:
         echo "repro_command=$REPRO_CMD" >> $GITHUB_OUTPUT
         
         # Save the blueprint content for reproduction
-        BLUEPRINT_CONTENT=$(cat $BLUEPRINT_FILE | jq -c '.')
         echo "blueprint_content<<EOF" >> $GITHUB_OUTPUT
         cat $BLUEPRINT_FILE >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
@@ -244,7 +243,7 @@ runs:
         
         ```bash
         git clone ${{ github.server_url }}/${{ github.repository }}.git
-        cd $(basename ${{ github.repository }})
+        cd "$(basename ${{ github.repository }})"
         git checkout ${{ github.sha }}
         npm install
         ```
@@ -265,13 +264,21 @@ runs:
         
         ### 4. Run the performance tests
         
-        Once the server is running on http://127.0.0.1:9400, run:
+        The server command above will occupy your terminal. Open a **new terminal window** and run:
         
         ```bash
         URLS_TO_TEST="${{ inputs.urls }}" \
         TEST_ITERATIONS=${{ inputs.iterations }} \
         TEST_REPETITIONS=${{ inputs.repetitions }} \
         npm run test:performance
+        ```
+        
+        ### 5. Stop the server
+        
+        When finished, stop the Playground server:
+        
+        ```bash
+        npx kill-port 9400
         ```
         
         ### Environment Details
