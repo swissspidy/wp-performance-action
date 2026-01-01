@@ -216,7 +216,7 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Download blob reports from GitHub Actions Artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       if: ${{ inputs.action == 'merge' }}
       id: download
       with:
