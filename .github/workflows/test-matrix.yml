@@ -16,7 +16,7 @@ jobs:
       matrix:
         shard: [1/4, 2/4, 3/4, 4/4]
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Run performance tests
       uses: ./
@@ -36,7 +36,7 @@ jobs:
     needs: [matrix]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Merge performance test results
       uses: ./
