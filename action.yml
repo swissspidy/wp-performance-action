@@ -119,8 +119,10 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Set up WordPress Playground
+      id: setup-playground
       run: |
         ARGS=()
+        REPRO_MOUNTS=()
         
         echo "::group::Mounting plugin directories"
 
@@ -139,6 +141,7 @@ runs:
             PLUGIN_BASENAME=$(basename $PLUGIN_REALPATH);
   
             ARGS+=("--mount=$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
+            REPRO_MOUNTS+=("--mount=./$PLUGIN_BASENAME:/wordpress/wp-content/plugins/$PLUGIN_BASENAME")
             echo "$PLUGIN_REALPATH:/wordpress/wp-content/plugins/$PLUGIN_BASENAME"
           fi
         done
@@ -153,6 +156,7 @@ runs:
             THEME_BASENAME=$(basename $THEME_REALPATH);
           
             ARGS+=("--mount=$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME")
+            REPRO_MOUNTS+=("--mount=./$THEME_BASENAME:/wordpress/wp-content/themes/$THEME_BASENAME")
             echo "$THEME_REALPATH:/wordpress/wp-content/themes/$THEME_BASENAME"
           fi
         done
@@ -163,11 +167,13 @@ runs:
         
         echo "::group::Prepare blueprint"
 
+        BLUEPRINT_FILE="./blueprints/setup.json"
         if [ ! -z $BLUEPRINT ]; then
           BLUEPRINT=$(realpath "${{ github.workspace }}/$BLUEPRINT");
           echo "Provided blueprint file: $BLUEPRINT"
           jq -s 'map(to_entries)|flatten|group_by(.key)|map({(.[0].key):map(.value)|add})|add' ./blueprints/setup.json $BLUEPRINT > ./blueprints/tmp-merged.json
           ARGS+=(--blueprint=./blueprints/tmp-merged.json)
+          BLUEPRINT_FILE="./blueprints/tmp-merged.json"
           cat ./blueprints/tmp-merged.json | jq '.'
         else
           ARGS+=(--blueprint=./blueprints/setup.json)
@@ -183,6 +189,19 @@ runs:
         echo "Providing arguments: ${ARGS[*]}"
         unset IFS;
 
+        # Save reproduction command for potential failure debugging
+        REPRO_CMD="npx @wp-playground/cli server"
+        for mount in "${REPRO_MOUNTS[@]}"; do
+          REPRO_CMD="$REPRO_CMD $mount"
+        done
+        REPRO_CMD="$REPRO_CMD --blueprint=blueprint.json --wp=$WP_VERSION --php=$PHP_VERSION --port=9400"
+        echo "repro_command=$REPRO_CMD" >> $GITHUB_OUTPUT
+        
+        # Save the blueprint content for reproduction
+        echo "blueprint_content<<EOF" >> $GITHUB_OUTPUT
+        cat $BLUEPRINT_FILE >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
         echo "Start Playground server..."
         ./node_modules/@wp-playground/cli/wp-playground.js server "${ARGS[@]}" &
       env:
@@ -195,6 +214,7 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Run tests
+      id: run-tests
       run: npm run ${{ inputs.debug != 'true' && '--silent' || '' }} test:performance $ADDITIONAL_ARGS
       if: ${{ inputs.action == 'test' }}
       env:
@@ -209,6 +229,68 @@ runs:
         TEST_REPETITIONS: ${{ inputs.repetitions }}
       shell: 'bash'
       working-directory: ${{ github.action_path }}/env
+
+    - name: Output reproduction instructions on failure
+      if: ${{ failure() && inputs.action == 'test' }}
+      run: |
+        cat >> $GITHUB_STEP_SUMMARY << 'REPRO_EOF'
+        
+        ## :warning: Performance Tests Failed
+        
+        To reproduce this failure locally, follow these steps:
+        
+        ### 1. Clone the repository and install dependencies
+        
+        ```bash
+        git clone ${{ github.server_url }}/${{ github.repository }}.git
+        cd "$(basename ${{ github.repository }})"
+        git checkout ${{ github.sha }}
+        npm install
+        ```
+        
+        ### 2. Create the blueprint file
+        
+        Save the following as `blueprint.json`:
+        
+        ```json
+        ${{ steps.setup-playground.outputs.blueprint_content }}
+        ```
+        
+        ### 3. Start WordPress Playground
+        
+        ```bash
+        ${{ steps.setup-playground.outputs.repro_command }}
+        ```
+        
+        ### 4. Run the performance tests
+        
+        The server command above will occupy your terminal. Open a **new terminal window** and run:
+        
+        ```bash
+        URLS_TO_TEST="${{ inputs.urls }}" \
+        TEST_ITERATIONS=${{ inputs.iterations }} \
+        TEST_REPETITIONS=${{ inputs.repetitions }} \
+        npm run test:performance
+        ```
+        
+        ### 5. Stop the server
+        
+        When finished, stop the Playground server:
+        
+        ```bash
+        npx kill-port 9400
+        ```
+        
+        ### Environment Details
+        
+        - **WordPress Version:** ${{ inputs.wp-version }}
+        - **PHP Version:** ${{ inputs.php-version }}
+        - **URLs Tested:** ${{ inputs.urls }}
+        - **Iterations:** ${{ inputs.iterations }}
+        - **Repetitions:** ${{ inputs.repetitions }}
+        
+        REPRO_EOF
+      shell: 'bash'
 
     - name: Stop server
       run: npm run ${{ inputs.debug != 'true' && '--silent' || '' }} stop-server
