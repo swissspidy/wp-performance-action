@@ -86,6 +86,11 @@ See [action.yml](action.yml)
     # Default: ''
     blueprint: ''
 
+    # JSON file defining browser scenarios to test.
+    #
+    # Default: ''
+    scenarios: ''
+
     # WordPress version to use.
     #
     # Loads the specified WordPress version.
@@ -200,6 +205,58 @@ Add a blueprint (`my-custom-blueprint.json`):
   ]
 }
 
+```
+
+Add browser scenarios (`my-scenarios.json`):
+
+```json
+{
+  "scenarios": [
+    {
+      "name": "Homepage LCP",
+      "steps": [
+        {
+          "step": "visit",
+          "url": "/"
+        }
+      ]
+    },
+    {
+      "name": "Search form INP",
+      "steps": [
+        {
+          "step": "visit",
+          "url": "/sample-page"
+        },
+        {
+          "step": "getByLabel",
+          "arg": "Search"
+        },
+        {
+          "step": "fill",
+          "arg": "Lorem ipsum"
+        },
+        {
+          "step": "getByRole",
+          "arg": "button",
+          "options": {
+            "name": "/Search/i"
+          }
+        },
+        {
+          "step": "click"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Use the scenario file in the workflow:
+
+```yaml
+with:
+  scenarios: ./my-scenarios.json
 ```
 
 ### Running tests in parallel (sharding)
