@@ -48,6 +48,10 @@ inputs:
     required: false
     description: 'PHP version to use.'
     default: '8.2'
+  cpu-throttling-rate:
+    required: false
+    description: 'CPU throttling rate to apply in Chromium.'
+    default: ''
   shard:
     required: false
     description: 'Shard to use if running tests in parallel in a matrix.'
@@ -204,6 +208,7 @@ runs:
         SHARD: ${{ inputs.shard != '' && inputs.shard || '' }}
         ADDITIONAL_ARGS: ${{ inputs.shard != '' && format('-- --shard={0}', inputs.shard) || '' }}
         URLS_TO_TEST: ${{ inputs.urls }}
+        CPU_THROTTLING_RATE: ${{ inputs.cpu-throttling-rate }}
         DEBUG: ${{ inputs.debug == 'true' }}
         TEST_ITERATIONS: ${{ inputs.iterations }}
         TEST_REPETITIONS: ${{ inputs.repetitions }}
