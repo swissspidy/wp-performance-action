@@ -101,7 +101,13 @@ See [action.yml](action.yml)
     #
     # Default: 'latest'
     php-version: ''
- 
+
+    # CPU throttling rate to apply in Chromium.
+    # For example, 4 simulates a 4x CPU slowdown.
+    #
+    # Default: ''
+    cpu-throttling-rate: ''
+
     # Number of times the tests should be repeated.
     #
     # Default: 2

@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import { test } from '@wordpress/e2e-test-utils-playwright';
 import { camelCaseDashes } from '../utils';
 
@@ -32,13 +33,20 @@ test.describe( 'Tests', () => {
 		.filter( Boolean );
 
 	const iterations = Number( process.env.TEST_ITERATIONS );
+	const cpuThrottlingRate = getCpuThrottlingRate();
 
 	for ( const url of urlsToTest ) {
 		for ( let i = 1; i <= iterations; i++ ) {
 			test( `URL: "${ url }" (${ i } of ${ iterations })`, async ( {
+				browserName,
 				page,
 				metrics,
 			} ) => {
+				await applyCpuThrottling(
+					page,
+					browserName,
+					cpuThrottlingRate
+				);
 				await page.goto( `${ url.replace( /\/$/, '' ) }/?i=${ i }` );
 
 				const serverTiming = await metrics.getServerTiming();
@@ -63,3 +71,32 @@ test.describe( 'Tests', () => {
 		}
 	}
 } );
+
+function getCpuThrottlingRate() {
+	const rate = ( process.env.CPU_THROTTLING_RATE || '' ).trim();
+
+	if ( rate === '' ) {
+		return 0;
+	}
+
+	const parsedRate = Number( rate );
+
+	if ( ! Number.isFinite( parsedRate ) || parsedRate <= 0 ) {
+		throw new Error( 'CPU_THROTTLING_RATE must be a positive number.' );
+	}
+
+	return parsedRate;
+}
+
+async function applyCpuThrottling(
+	page: Page,
+	browserName: string,
+	rate: number
+) {
+	if ( rate === 0 || browserName !== 'chromium' ) {
+		return;
+	}
+
+	const session = await page.context().newCDPSession( page );
+	await session.send( 'Emulation.setCPUThrottlingRate', { rate } );
+}
