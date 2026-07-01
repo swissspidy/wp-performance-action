@@ -298,7 +298,7 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Download blob reports from GitHub Actions Artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       if: ${{ inputs.action == 'merge' }}
       id: download
       with:
@@ -380,7 +380,7 @@ runs:
       shell: 'bash'
 
     - name: Upload performance results
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: ${{ success() && ( inputs.action == 'test' || inputs.action == 'merge' ) && ! inputs.shard && inputs.upload-artifacts != 'false' }}
       with:
         name: performance-results
@@ -396,7 +396,7 @@ runs:
       shell: 'bash'
 
     - name: Upload blob report
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       if: ${{ success() && inputs.shard != '' && inputs.upload-artifacts != 'false' }}
       with:
         name: ${{ env.ARTIFACT_NAME }}
