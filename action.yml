@@ -95,7 +95,7 @@ runs:
       shell: 'bash'
 
     - name: Setup Node
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
         node-version-file: ${{ env.REL_ACTION_PATH }}/env/.nvmrc
         # Disable caching as it is not supported outside $GITHUB_WORKSPACE
@@ -216,7 +216,7 @@ runs:
       working-directory: ${{ github.action_path }}/env
 
     - name: Download blob reports from GitHub Actions Artifacts
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       if: ${{ inputs.action == 'merge' }}
       id: download
       with:
