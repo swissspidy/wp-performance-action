@@ -40,6 +40,10 @@ inputs:
     required: false
     description: 'Blueprint to use for setting up the environment.'
     default: ''
+  scenarios:
+    required: false
+    description: 'JSON file defining browser scenarios to test.'
+    default: ''
   wp-version:
     required: false
     description: 'WordPress version to use.'
@@ -204,6 +208,7 @@ runs:
         SHARD: ${{ inputs.shard != '' && inputs.shard || '' }}
         ADDITIONAL_ARGS: ${{ inputs.shard != '' && format('-- --shard={0}', inputs.shard) || '' }}
         URLS_TO_TEST: ${{ inputs.urls }}
+        SCENARIOS_FILE: ${{ inputs.scenarios }}
         DEBUG: ${{ inputs.debug == 'true' }}
         TEST_ITERATIONS: ${{ inputs.iterations }}
         TEST_REPETITIONS: ${{ inputs.repetitions }}

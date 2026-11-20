@@ -1,5 +1,6 @@
 import { test } from '@wordpress/e2e-test-utils-playwright';
 import { camelCaseDashes } from '../utils';
+import { loadScenarios, runScenario } from '../utils/scenarios';
 
 const results: Record< string, Record< string, number[] > > = {};
 
@@ -32,6 +33,7 @@ test.describe( 'Tests', () => {
 		.filter( Boolean );
 
 	const iterations = Number( process.env.TEST_ITERATIONS );
+	const scenariosToTest = loadScenarios();
 
 	for ( const url of urlsToTest ) {
 		for ( let i = 1; i <= iterations; i++ ) {
@@ -59,6 +61,38 @@ test.describe( 'Tests', () => {
 				results[ url ].timeToFirstByte.push( ttfb );
 				results[ url ].lcpMinusTtfb ??= [];
 				results[ url ].lcpMinusTtfb.push( lcp - ttfb );
+			} );
+		}
+	}
+
+	for ( const scenario of scenariosToTest ) {
+		for ( let i = 1; i <= iterations; i++ ) {
+			test( `Scenario: "${ scenario.name }" (${ i } of ${ iterations })`, async ( {
+				page,
+				metrics,
+			} ) => {
+				await runScenario( page, scenario, i );
+
+				const serverTiming = await metrics.getServerTiming();
+
+				results[ scenario.name ] ??= {};
+
+				for ( const [ key, value ] of Object.entries( serverTiming ) ) {
+					results[ scenario.name ][ camelCaseDashes( key ) ] ??= [];
+					results[ scenario.name ][ camelCaseDashes( key ) ].push(
+						value
+					);
+				}
+
+				const ttfb = await metrics.getTimeToFirstByte();
+				const lcp = await metrics.getLargestContentfulPaint();
+
+				results[ scenario.name ].largestContentfulPaint ??= [];
+				results[ scenario.name ].largestContentfulPaint.push( lcp );
+				results[ scenario.name ].timeToFirstByte ??= [];
+				results[ scenario.name ].timeToFirstByte.push( ttfb );
+				results[ scenario.name ].lcpMinusTtfb ??= [];
+				results[ scenario.name ].lcpMinusTtfb.push( lcp - ttfb );
 			} );
 		}
 	}
